@@ -1,60 +1,72 @@
-'use client'
-import { useState } from "react";
+// components/SshConsole.tsx
+'use client';
+import { useSshStore } from '@/store/sshSlice';
+import { useEffect } from 'react';
 
-export default function Home() {
-  const [output, setOutput] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+const SshConsole: React.FC = () => {
+  // Use Zustand store
+  const { input, setCommandInput, execution, executeCommands, resetExecution } = useSshStore();
 
+  const { output, error, loading } = execution; // Destructure execution state
 
-  async function handleSSHConnect() {
-    console.log('trying to connect')
-    setLoading(true);
-    setError(null);
-    setOutput(null);
-
-    try {
-      // Make a POST request to the API route
-      const response = await fetch('/api/ssh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json', // Specify content type
-        },
-        body: JSON.stringify({
-          hostname: '127.0.0.1',   // replace with actual values
-          username: 'krissssz',    // replace with actual values
-          password: '0997'         // replace with actual values
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.output) {
-        setOutput(data.output);
-      } else {
-        setError(data.error || 'Unknown error occurred');
-      }
-    } catch (err) {
-      console.error('Fetch error:', err); // Log fetch errors
-      setError('Failed to fetch SSH data');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Execute the commands using the Zustand store
+    await executeCommands(input);
+  };
 
   return (
-    <div>
-      <h1 className="text-xl">
-        Cisco WebConfig
+    <div className="console">
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Hostname"
+          value={input.hostname}
+          onChange={(e) => setCommandInput({ ...input, hostname: e.target.value })}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Username"
+          value={input.username}
+          onChange={(e) => setCommandInput({ ...input, username: e.target.value })}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={input.password}
+          onChange={(e) => setCommandInput({ ...input, password: e.target.value })}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Command"
+          value={input.commands.join(', ')} // Use the commands from the input
+          onChange={(e) => setCommandInput({ ...input, commands: e.target.value.split(',').map(cmd => cmd.trim()) })} // Split input for multiple commands
+          required
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Executing...' : 'Execute'}
+        </button>
+      </form>
 
-      </h1>
-      <button onClick={() => console.log('pressed')}>BUTTON</button>
-
-
-
-
-
-
+      <div className="output">
+        {output && (
+          <div>
+            <h3>Output:</h3>
+            <pre>{output}</pre>
+          </div>
+        )}
+        {error && (
+          <div>
+            <h3>Error:</h3>
+            <pre>{error}</pre>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default SshConsole;

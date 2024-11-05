@@ -1,44 +1,31 @@
 'use client'; // This component is a client component
 
+import { connectSSH } from '@/helpers/ssh';
 import { useState } from 'react';
+import { StateType } from '@/helpers/ssh'; // Importing the StateType
 
 const SSHClient = () => {
   const [hostname, setHostname] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState<null | string>(null);
+  const [connectionStatus, setConnectionStatus] = useState<StateType>('disconnected'); // Use StateType for state
 
-  const connectSSH = async () => {
-    setConnectionStatus('Attempting to connect...');
-
-    // Send POST request to the SSH API route
+  const handleConnect = async () => {
     try {
-      const response = await fetch('/api/ssh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ hostname, username, password }),
-      });
-
-      const data = await response.json();
-
-      // Check the response for success or error
-      if (response.ok) {
-        setConnectionStatus('Connected');
-      } else {
-        setConnectionStatus(`Error: ${data.error}`);
-      }
-    } catch (error: any) {
-      setConnectionStatus(`Error: ${error.message}`);
+      await connectSSH(hostname, username, password);
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  // Render inputs and connection status based on connection status
+  const handleDisconnect = () => {
+    setConnectionStatus('disconnected');
+  };
+
   return (
     <div className="flex items-center space-x-2"> {/* Adjusted for horizontal layout */}
       <h1 className="text-sm font-bold">SSH Client</h1>
-      {connectionStatus !== 'Connected' ? (
+      {connectionStatus !== 'connected' ? ( // Check against 'connected'
         <>
           <input
             type="text"
@@ -62,15 +49,17 @@ const SSHClient = () => {
             className="border border-gray-300 rounded-md p-1 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
-            onClick={connectSSH}
+            onClick={handleConnect} // Updated to use handleConnect
             className="bg-blue-500 text-white py-1 px-2 rounded-md hover:bg-blue-600 transition duration-200 text-sm"
           >
             Connect
           </button>
+          <div className="text-sm text-red-500">{connectionStatus}</div>
+
         </>
       ) : (
         <>
-          <div className="text-sm">{connectionStatus}</div> {/* Adjusted for smaller text */}
+          <div className="text-sm">Connected to SSH!</div> {/* Display connection status */}
           <svg
             width="16px"
             height="16px"
@@ -93,7 +82,7 @@ const SSHClient = () => {
             </g>
           </svg>
           <button
-            onClick={() => setConnectionStatus(null)}
+            onClick={handleDisconnect} // Update to disconnected
             className="bg-blue-500 text-white py-1 px-2 rounded-md hover:bg-blue-600 transition duration-200 text-sm"
           >
             Disconnect
