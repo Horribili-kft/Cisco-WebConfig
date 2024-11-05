@@ -1,8 +1,9 @@
+// Ez a komponens jelenleg nincs használva
+
+
 'use client'; // This component is a client component
 
-import { connectSSH } from '@/helpers/ssh';
 import { useState } from 'react';
-import { StateType } from '@/helpers/ssh'; // Importing the StateType
 
 const SSHClient = () => {
   const [hostname, setHostname] = useState('');

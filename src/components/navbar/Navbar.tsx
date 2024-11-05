@@ -1,3 +1,5 @@
+// Ez a komponens jelenleg nincs használva
+
 'use client'
 
 import React from 'react'

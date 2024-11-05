@@ -1,18 +1,30 @@
 // components/SshConsole.tsx
 'use client';
 import { useSshStore } from '@/store/sshSlice';
-import { useEffect } from 'react';
+import { useState } from 'react';
 
 const SshConsole: React.FC = () => {
-  // Use Zustand store
-  const { input, setCommandInput, execution, executeCommands, resetExecution } = useSshStore();
+  const { execution, addCommand, executeCommands, commands } = useSshStore();
+  // Az execution state destrukturálása.
+  const { output, error, loading} = execution
 
-  const { output, error, loading } = execution; // Destructure execution state
+  const [hostname, setHostname] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [command, setCommand] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Execute the commands using the Zustand store
-    await executeCommands(input);
+    addCommand(command); // Add command to the store
+    await executeCommands({ hostname, username, password, commands: [command] }); // Execute all commands including the new one
+    setCommand(''); // Clear input after execution
+  };
+
+  const handleSubmitExecAll = async (e: React.FormEvent) => {
+    e.preventDefault();
+    addCommand(command); // Add command to the store
+    await executeCommands({ hostname, username, password, commands: [...commands, command] }); // Execute all commands including the new one
+    setCommand(''); // Clear input after execution
   };
 
   return (
@@ -21,29 +33,29 @@ const SshConsole: React.FC = () => {
         <input
           type="text"
           placeholder="Hostname"
-          value={input.hostname}
-          onChange={(e) => setCommandInput({ ...input, hostname: e.target.value })}
+          value={hostname}
+          onChange={(e) => setHostname(e.target.value)}
           required
         />
         <input
           type="text"
           placeholder="Username"
-          value={input.username}
-          onChange={(e) => setCommandInput({ ...input, username: e.target.value })}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <input
           type="password"
           placeholder="Password"
-          value={input.password}
-          onChange={(e) => setCommandInput({ ...input, password: e.target.value })}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
         <input
           type="text"
           placeholder="Command"
-          value={input.commands.join(', ')} // Use the commands from the input
-          onChange={(e) => setCommandInput({ ...input, commands: e.target.value.split(',').map(cmd => cmd.trim()) })} // Split input for multiple commands
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
           required
         />
         <button type="submit" disabled={loading}>
@@ -52,6 +64,12 @@ const SshConsole: React.FC = () => {
       </form>
 
       <div className="output">
+        <h3>Command History:</h3>
+        {commands.map((cmd, index) => (
+          <div key={index} className="command-history">
+            <strong>Command:</strong> {cmd}
+          </div>
+        ))}
         {output && (
           <div>
             <h3>Output:</h3>
