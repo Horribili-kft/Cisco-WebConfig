@@ -13,7 +13,8 @@ const executeCommand = (conn: Client, command: string): Promise<string> => {
             let result = '';
 
             stream
-                .on('data', (data: any) => {
+                // I don't know the return type of data, so I just define that it can be converted into a string, which is true, since it is a reply from the SSH server
+                .on('data', (data: { toString: () => string; }) => {
                     result += data.toString(); // Accumulate output
                 })
                 .on('close', () => {
@@ -74,7 +75,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields: hostname, username, password.' }, { status: 400 });
         }
 
-        hostname
         // Pass destructured output to the SSH handler
         const output = await HandleSSH(hostname, username, password, commands);
 
@@ -83,11 +83,12 @@ export async function POST(request: Request) {
     } 
     
     // If any error occurs during connection, it gets thrown here
-    catch (error: any) {
+    catch (error: unknown) {
+        // (A lot of type safety here that I could not write, nor could I understand. Thank you Llama 3.1 70B)
         console.log(error);
-        if (error.includes("getaddrinfo ENOTFOUND", 0)) {
-            return NextResponse.json({ error: `Hostname could not be resolved (${error})` }, { status: 500 });
+        if (error instanceof Error && error.message.includes("getaddrinfo ENOTFOUND")) {
+            return NextResponse.json({ error: `Hostname could not be resolved (${error.message})` }, { status: 500 });
         }
-        return NextResponse.json({ error: error.message || error ||'An error occurred' }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'An error occurred' }, { status: 500 });
     }
 }
