@@ -3,7 +3,6 @@
 'use client'
 
 import React from 'react'
-import SSHconnection from './SSHconnection'
 
 export default function Navbar() {
   return (
@@ -20,7 +19,6 @@ export default function Navbar() {
 
 
       <div>
-        <SSHconnection />
 
       </div>
     </nav>)

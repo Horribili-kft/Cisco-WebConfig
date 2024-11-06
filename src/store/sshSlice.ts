@@ -10,6 +10,7 @@ interface SshStore {
     };
 
     // Array to store executed commands. This is a history of commands, not the commands meant to be executed
+    // (Commands to be executed are passed to the executeCommands function at the time of execution, and should be stored in the component that executes them.)
     commands: string[]; 
 
     addCommand: (command: string) => void; // Function to add a command
