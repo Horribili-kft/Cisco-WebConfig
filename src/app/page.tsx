@@ -1,60 +1,70 @@
-'use client'
-import { useState } from "react";
+// components/SshConsole.tsx
+'use client';
+import Terminal from '@/components/Terminal';
+import { useSshStore } from '@/store/sshSlice';
+import { useState } from 'react';
 
-export default function Home() {
-  const [output, setOutput] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+const SshConsole: React.FC = () => {
+  const { loading, executeCommands} = useSshStore();
 
+  const [hostname, setHostname] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [command, setCommand] = useState('');
 
-  async function handleSSHConnect() {
-    console.log('trying to connect')
-    setLoading(true);
-    setError(null);
-    setOutput(null);
-
-    try {
-      // Make a POST request to the API route
-      const response = await fetch('/api/ssh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json', // Specify content type
-        },
-        body: JSON.stringify({
-          hostname: '127.0.0.1',   // replace with actual values
-          username: 'krissssz',    // replace with actual values
-          password: '0997'         // replace with actual values
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.output) {
-        setOutput(data.output);
-      } else {
-        setError(data.error || 'Unknown error occurred');
-      }
-    } catch (err) {
-      console.error('Fetch error:', err); // Log fetch errors
-      setError('Failed to fetch SSH data');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await executeCommands({ hostname, username, password, commands: [command] }); // Execute all commands including the new one
+    setCommand(''); // Clear input after execution
+  };
 
   return (
-    <div>
-      <h1 className="text-xl">
-        Cisco WebConfig
+    <div className="console p-4">
+      {/* Terminal input form */}
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <input
+          className="input input-bordered w-full"
+          type="text"
+          placeholder="Hostname"
+          value={hostname}
+          onChange={(e) => setHostname(e.target.value)}
+          required
+        />
+        <input
+          className="input input-bordered w-full"
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          className="input input-bordered w-full"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <textarea
+          className="textarea textarea-bordered w-full"
+          placeholder="Enter command(s)"
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          rows={3}
+        />
+        <button
+          className="btn btn-primary w-full"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? 'Executing...' : 'Execute'}
+        </button>
+      </form>
 
-      </h1>
-      <button onClick={() => console.log('pressed')}>BUTTON</button>
-
-
-
-
-
-
+      <Terminal></Terminal>
     </div>
   );
-}
+};
+
+export default SshConsole;

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/navbar/Navbar";
 
 /* Metaadatok amit a böngésző megkap a weboldalról. SEO-kor hasznos, nekünk ebben a projetkben ez nem fontos */
 export const metadata: Metadata = {
@@ -16,8 +15,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar></Navbar>
-
         {children}
       </body>
     </html>

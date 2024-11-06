@@ -1,88 +1,90 @@
+// app/api/ssh/route.ts
 import { NextResponse } from 'next/server';
-import { Client, ConnectConfig } from 'ssh2';
+import { Client } from 'ssh2';
 
-interface SSHResponse {
-    output?: string;
-    error?: string;
-}
-
-// We accept commands as well
-async function sshConnect(hostname: string, username: string, password: string, commands?: string[]): Promise<SSHResponse> {
-    const sshClient = new Client();
-    return new Promise<SSHResponse>((resolve, reject) => {
-        sshClient.on('ready', async () => {
-            try {
-                let output = '';
-
-                // If commands are provided, execute them
-                if (commands && commands.length > 0) {
-                    output = await executeCommands(sshClient, commands);
-                } else {
-                    output = 'Connected successfully. No commands executed.';
-                }
-
-                resolve({ output });
-            } catch (err) {
-                reject(err); // Reject the promise on any execution error
-            } finally {
-                sshClient.end(); // Close the connection when done
+// Function to execute a single command
+const executeCommand = (conn: Client, command: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        conn.exec(command, (err, stream) => {
+            if (err) {
+                return reject(`Error executing "${command}": ${err.message}`);
             }
-        }).connect({
-            host: hostname,
-            port: 22,
-            username,
-            password,
-        } as ConnectConfig);
 
-        sshClient.on('error', (err) => {
-            reject({ error: `SSH Connection error: ${err.message}` });
+            let result = '';
+
+            stream
+                // I don't know the return type of data, so I just define that it can be converted into a string, which is true, since it is a reply from the SSH server
+                .on('data', (data: { toString: () => string; }) => {
+                    result += data.toString(); // Accumulate output
+                })
+                .on('close', () => {
+                    resolve(result.trim()); // Resolve with the command output
+                })
+                .stderr.on('data', (data) => {
+                    reject(`Error executing command "${command}": ${data.toString()}`); // Reject with error message
+                });
         });
+    });
+};
+
+// Utility function to establish SSH connection and run commands
+
+// TODO: handle multiple command execution correctly. Currently we expect a list of commands, but we should expect a string, and we should execute each command by splitting them at newlines (or maybe ';'?)
+async function HandleSSH(hostname: string, username: string, password: string, commands: string[]): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const conn = new Client();
+        let output = ''
+        conn
+            .on('ready', async () => {
+                if (commands.length === 0 || (commands[0].trim() === "" && commands.length === 1)) {
+                    conn.end();
+                    resolve('SSH connection established successfully, no commands to run.');
+                } else {
+                    try {
+                        for (const command of commands) {
+                            console.log(`Executing command: ${command}`)
+                            output = await executeCommand(conn, command);
+                        }
+                        conn.end();
+                        resolve(output); // Resolve with all command outputs
+                    } catch (error) {
+                        reject(error); // Reject if any command fails
+                    }
+                }
+            })
+            .on('error', (err) => {
+                reject(`SSH Connection Error: ${err.message}`);
+            })
+            .connect({
+                host: hostname,
+                port: 22, // Default SSH port
+                username: username,
+                password: password,
+            });
     });
 }
 
-// Function to execute a list of commands
-async function executeCommands(sshClient: Client, commands: string[]): Promise<string> {
-    let allOutput = '';
-
-    for (const command of commands) {
-        const output = await new Promise<string>((resolve, reject) => {
-            sshClient.exec(command, (err, stream) => {
-                if (err) {
-                    return reject(err);
-                }
-
-                let commandOutput = '';
-                stream.on('data', (data: Buffer) => {
-                    commandOutput += data.toString();
-                });
-                stream.on('close', () => {
-                    resolve(commandOutput);
-                });
-                stream.stderr.on('data', (data: Buffer) => reject(data.toString()));
-            });
-        });
-        allOutput += `\nOutput of command "${command}":\n${output}`;
-    }
-
-    return allOutput;
-}
-
-// API Route for SSH connection
-export async function POST(req: Request) {
+// Handle the POST request
+export async function POST(request: Request) {
     try {
-        const body = await req.json(); // Get JSON body
-        const { hostname, username, password, commands } = body; // Destructure the body
+        // Destructure json for future use
+        const { hostname, username, password, commands } = await request.json();
 
-        // Validate input
+        // Validate required fields
         if (!hostname || !username || !password) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+            return NextResponse.json({ error: 'Missing required fields: hostname, username, password.' }, { status: 400 });
         }
 
-        // Call the sshConnect function
-        const response = await sshConnect(hostname, username, password, commands);
-        return NextResponse.json(response);
-    } catch (error) {
-        console.error('Error processing request:', error);
-        return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+        // Pass destructured output to the SSH handler
+        const output = await HandleSSH(hostname, username, password, commands);
+
+        // Return the output of the commands if are successful, otherwise an error is thrown
+        return NextResponse.json({ output });
+    } 
+    
+    // If any error occurs during connection, it gets thrown here
+    catch (error: unknown) {
+        console.log(error);
+        return NextResponse.json({ error: error instanceof Error ? error.message : error || 'An error occurred' }, { status: 500 });
     }
 }
