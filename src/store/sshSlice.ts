@@ -24,7 +24,7 @@ export const useSshStore = create<SshStore>((set) => ({
     terminalBuffer: [],  // Store that holds all terminal entries
 
     clearTerminalBuffer: () => {
-        set({terminalBuffer: []})
+        set({ terminalBuffer: [] })
     },
 
     // Function to execute commands and update terminal buffer accordingly
@@ -32,7 +32,7 @@ export const useSshStore = create<SshStore>((set) => ({
         set({ loading: true });
 
         // Sanitize commands, so that we don't append empty strings to the buffer:
-        if (commands.length === 0 || (commands[0].trim() === "" && commands.length === 1)){
+        if (commands.length === 0 || (commands[0].trim() === "" && commands.length === 1)) {
             commands = []
         }
 
@@ -57,19 +57,27 @@ export const useSshStore = create<SshStore>((set) => ({
             const data = await response.json();
 
             if (response.ok) {
-                // Add the output to the terminal buffer
+                // We check if the returned output includes the word 'error'. If it does we change the line type to error
+                const outputLines = data.output.split('\n').map((line: string) => {
+                    const isError = line.toLowerCase().includes('error');  // Check for 'error' in line
+                    return {
+                        type: isError ? 'error' : 'output',  // Mark as error or output
+                        content: line,
+                    };
+                });
+
+                // Add processed output lines to the buffer
                 set((state) => ({
-                    terminalBuffer: [
-                        ...state.terminalBuffer,
-                        { type: 'output', content: data.output }
-                    ]
+                    terminalBuffer: [...state.terminalBuffer, ...outputLines]
                 }));
+
+
             } else {
                 // Add the error message to the terminal buffer
                 set((state) => ({
                     terminalBuffer: [
                         ...state.terminalBuffer,
-                        { type: 'error', content: data.error }
+                        { type: 'error', content: data.error[0] }
                     ]
                 }));
             }

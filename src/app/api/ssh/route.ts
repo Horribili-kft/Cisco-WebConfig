@@ -21,32 +21,32 @@ const executeCommand = (conn: Client, command: string): Promise<string> => {
                     resolve(result.trim()); // Resolve with the command output
                 })
                 .stderr.on('data', (data) => {
-                    resolve(`Error executing command "${command}": ${data.toString()}`); // Resolve with error message
+                    reject(`Error executing command "${command}": ${data.toString()}`); // Reject with error message
                 });
         });
     });
 };
 
 // Utility function to establish SSH connection and run commands
-async function HandleSSH(hostname: string, username: string, password: string, commands: string[]): Promise<string[]> {
+
+// TODO: handle multiple command execution correctly. Currently we expect a list of commands, but we should expect a string, and we should execute each command by splitting them at newlines (or maybe ';'?)
+async function HandleSSH(hostname: string, username: string, password: string, commands: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
         const conn = new Client();
-        const results: string[] = []; // Array to hold output of each command
-
+        let output = ''
         conn
             .on('ready', async () => {
                 if (commands.length === 0 || (commands[0].trim() === "" && commands.length === 1)) {
                     conn.end();
-                    resolve(['SSH connection established successfully, no commands to run.']);
+                    resolve('SSH connection established successfully, no commands to run.');
                 } else {
                     try {
                         for (const command of commands) {
                             console.log(`Executing command: ${command}`)
-                            const output = await executeCommand(conn, command);
-                            results.push(output); // Store the output of each command
+                            output = await executeCommand(conn, command);
                         }
                         conn.end();
-                        resolve(results); // Resolve with all command outputs
+                        resolve(output); // Resolve with all command outputs
                     } catch (error) {
                         reject(error); // Reject if any command fails
                     }

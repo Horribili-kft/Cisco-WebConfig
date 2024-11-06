@@ -10,12 +10,15 @@ export default function Terminal() {
             {/* Render terminalBuffer entries */}
             {terminalBuffer.length > 0 ? (
                 terminalBuffer.map((entry, index) => (
-                    <pre
-                        key={index}
-                        data-prefix={entry.type === 'command' ? '$' : entry.type === 'output' ? '>' : entry.type === 'error' ? '!' : ''}
-                        className={entry.type === 'error' ? 'text-error' : entry.type === 'output' ? 'text-success' : ''}>
-                        <code>{entry.content}</code>
-                    </pre>
+                    // Split entry.content by \n and map over each line
+                    entry.content.split('\n').map((line, lineIndex) => (
+                        <pre
+                            key={`${index}-${lineIndex}`} // Unique key for each line
+                            data-prefix={entry.type === 'command' ? '$' : entry.type === 'output' ? '>' : entry.type === 'error' ? '!' : ''}
+                            className={entry.type === 'error' ? 'text-error' : entry.type === 'output' ? 'text-success' : ''}>
+                            <code>{line}</code>
+                        </pre>
+                    ))
                 ))
             ) : (
                 <pre data-prefix="$"><code>Waiting for commands...</code></pre>
