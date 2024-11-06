@@ -15,7 +15,7 @@ git clone https://github.com/Horribili-kft/Cisco-WebConfig
 3. Telepítsd a szükséges node csomagokat:
 ```bash
 cd Cisco-WebConfig
-npm install --include=dev
+npm install --include=dev --legacy-peer-deps
 ```
 4. Végül futtasd a development servert:
 ```bash
