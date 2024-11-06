@@ -84,11 +84,7 @@ export async function POST(request: Request) {
     
     // If any error occurs during connection, it gets thrown here
     catch (error: unknown) {
-        // (A lot of type safety here that I could not write, nor could I understand. Thank you Llama 3.1 70B)
         console.log(error);
-        if (error instanceof Error && error.message.includes("getaddrinfo ENOTFOUND")) {
-            return NextResponse.json({ error: `Hostname could not be resolved (${error.message})` }, { status: 500 });
-        }
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'An error occurred' }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : error || 'An error occurred' }, { status: 500 });
     }
 }

@@ -77,7 +77,7 @@ export const useSshStore = create<SshStore>((set) => ({
                 set((state) => ({
                     terminalBuffer: [
                         ...state.terminalBuffer,
-                        { type: 'error', content: data.error[0] }
+                        { type: 'error', content: data.error }
                     ]
                 }));
             }
