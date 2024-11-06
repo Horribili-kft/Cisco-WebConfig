@@ -9,7 +9,8 @@ interface SshStore {
         error: string | null;
     };
 
-    commands: string[]; // Array to store commands
+    // Array to store executed commands. This is a history of commands, not the commands meant to be executed
+    commands: string[]; 
 
     addCommand: (command: string) => void; // Function to add a command
 
@@ -23,7 +24,6 @@ export const useSshStore = create<SshStore>((set) => ({
 
     addCommand: (command: string) => set((state) => ({ commands: [...state.commands, command] })), // Append command
 
-    
 
     executeCommands: async ({ hostname, username, password, commands }) => {
         // Elkezdjük a parancsok futtatását
@@ -44,7 +44,9 @@ export const useSshStore = create<SshStore>((set) => ({
                 set({ execution: { loading: false, output: null, error: data.error } });
             }
         } catch (error) {
-            set({ execution: { loading: false, output: null, error: error.message } });
+            // Ensure error is always an object with a message
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            set({ execution: { loading: false, output: null, error: errorMessage } });
         }
     },
 }));

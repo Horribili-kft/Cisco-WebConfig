@@ -7,7 +7,7 @@ const executeCommand = (conn: Client, command: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         conn.exec(command, (err, stream) => {
             if (err) {
-                return reject(`Error executing command "${command}": ${err.message}`);
+                return reject(`Error executing "${command}": ${err.message}`);
             }
 
             let result = '';
@@ -27,19 +27,20 @@ const executeCommand = (conn: Client, command: string): Promise<string> => {
 };
 
 // Utility function to establish SSH connection and run commands
-async function runSSHCommands(hostname: string, username: string, password: string, commands: string[]): Promise<string[]> {
+async function HandleSSH(hostname: string, username: string, password: string, commands: string[]): Promise<string[]> {
     return new Promise((resolve, reject) => {
         const conn = new Client();
         const results: string[] = []; // Array to hold output of each command
 
         conn
             .on('ready', async () => {
-                if (commands.length === 0) {
+                if (commands.length === 0 || (commands[0].trim() === "" && commands.length === 1)) {
                     conn.end();
                     resolve(['SSH connection established successfully, no commands to run.']);
                 } else {
                     try {
                         for (const command of commands) {
+                            console.log(`Executing command: ${command}`)
                             const output = await executeCommand(conn, command);
                             results.push(output); // Store the output of each command
                         }
@@ -65,6 +66,7 @@ async function runSSHCommands(hostname: string, username: string, password: stri
 // Handle the POST request
 export async function POST(request: Request) {
     try {
+        // Destructure json for future use
         const { hostname, username, password, commands } = await request.json();
 
         // Validate required fields
@@ -72,13 +74,19 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields: hostname, username, password.' }, { status: 400 });
         }
 
-        // Run SSH commands
-        const output = await runSSHCommands(hostname, username, password, commands);
+        hostname
+        // Pass destructured output to the SSH handler
+        const output = await HandleSSH(hostname, username, password, commands);
+
+        // Return the output of the commands if are successful, otherwise an error is thrown
         return NextResponse.json({ output });
-    } catch (error: any) {
+    } 
+    
+    // If any error occurs during connection, it gets thrown here
+    catch (error: any) {
         console.log(error);
-        if (error.message && error.message.startsWith("getaddrinfo ENOTFOUND")) {
-            return NextResponse.json({ error: `Hostname could not be resolved` }, { status: 500 });
+        if (error.includes("getaddrinfo ENOTFOUND", 0)) {
+            return NextResponse.json({ error: `Hostname could not be resolved (${error})` }, { status: 500 });
         }
         return NextResponse.json({ error: error.message || error ||'An error occurred' }, { status: 500 });
     }

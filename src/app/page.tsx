@@ -5,8 +5,7 @@ import { useState } from 'react';
 
 const SshConsole: React.FC = () => {
   const { execution, addCommand, executeCommands, commands } = useSshStore();
-  // Az execution state destrukturálása.
-  const { output, error, loading} = execution
+  const { output, error, loading } = execution;
 
   const [hostname, setHostname] = useState('');
   const [username, setUsername] = useState('');
@@ -17,13 +16,6 @@ const SshConsole: React.FC = () => {
     e.preventDefault();
     addCommand(command); // Add command to the store
     await executeCommands({ hostname, username, password, commands: [command] }); // Execute all commands including the new one
-    setCommand(''); // Clear input after execution
-  };
-
-  const handleSubmitExecAll = async (e: React.FormEvent) => {
-    e.preventDefault();
-    addCommand(command); // Add command to the store
-    await executeCommands({ hostname, username, password, commands: [...commands, command] }); // Execute all commands including the new one
     setCommand(''); // Clear input after execution
   };
 
@@ -51,12 +43,11 @@ const SshConsole: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <input
-          type="text"
-          placeholder="Command"
+        <textarea
+          placeholder="Enter command(s)"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
-          required
+          rows={5} 
         />
         <button type="submit" disabled={loading}>
           {loading ? 'Executing...' : 'Execute'}
@@ -77,7 +68,7 @@ const SshConsole: React.FC = () => {
           </div>
         )}
         {error && (
-          <div>
+          <div className='text-red-700'>
             <h3>Error:</h3>
             <pre>{error}</pre>
           </div>
