@@ -70,11 +70,11 @@ const SshConsole: React.FC = () => {
           <div className="join join-vertical w-full pt-4">
             {" "}
             <textarea
-              className="textarea textarea-bordered w-full rounded-b-none"
+              className="textarea textarea-bordered w-full rounded-b-none focus:outline-none focus:bg-base-200"
               placeholder="Enter command(s)"
               value={command}
               onChange={(e) => setCommand(e.target.value)}
-              rows={5}
+              rows={12}
             />
             <Terminal></Terminal>
           </div>
