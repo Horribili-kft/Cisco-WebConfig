@@ -1,4 +1,5 @@
-// store.ts
+// This store executes commands and stores the output of the commands in a terminal buffer. 
+// It also provides a loading variable, that is true when we are executing the commnad
 import { create } from 'zustand';
 
 // The terminal buffer is a list of terminal entries, these entries store the type of entry, and the data in that entry.
@@ -92,7 +93,7 @@ export const useSshStore = create<SshStore>((set) => ({
             }));
         }
 
-
+        
         // Reset execution status after command execution
         set({ loading: false });
     },

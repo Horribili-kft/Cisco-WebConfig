@@ -58,7 +58,7 @@ const SshConsole: React.FC = () => {
           type="submit"
           disabled={loading}
         >
-          {loading ? 'Executing...' : 'Execute'}
+          {command ? (loading ? 'Executing...' : 'Execute') : 'Test connection'}
         </button>
       </form>
 
