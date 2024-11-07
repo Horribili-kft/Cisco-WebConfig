@@ -6,7 +6,7 @@ export default function Terminal() {
     const { loading, terminalBuffer, clearTerminalBuffer } = useSshStore();
 
     return (
-        <div className="mockup-code mt-4 p-4 bg-gray-900 text-gray-200 rounded-lg shadow-md">
+        <div className="mockup-code p-4 bg-gray-900 text-gray-200 rounded-lg rounded-t-none shadow-md min-h-96">
             {/* Render terminalBuffer entries */}
             {terminalBuffer.length > 0 ? (
                 terminalBuffer.map((entry, index) => (

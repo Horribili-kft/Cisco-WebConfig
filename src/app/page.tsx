@@ -1,68 +1,85 @@
 // components/SshConsole.tsx
-'use client';
-import Terminal from '@/components/Terminal';
-import { useSshStore } from '@/store/sshSlice';
-import { useState } from 'react';
+"use client";
+import Terminal from "@/components/Terminal";
+import { useSshStore } from "@/store/sshSlice";
+import { useState } from "react";
 
 const SshConsole: React.FC = () => {
-  const { loading, executeCommands} = useSshStore();
+  const { loading, executeCommands } = useSshStore();
 
-  const [hostname, setHostname] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [command, setCommand] = useState('');
+  const [hostname, setHostname] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [command, setCommand] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await executeCommands({ hostname, username, password, commands: [command] }); // Execute all commands including the new one
-    setCommand(''); // Clear input after execution
+    await executeCommands({
+      hostname,
+      username,
+      password,
+      commands: [command],
+    }); // Execute all commands including the new one
+    setCommand(""); // Clear input after execution
   };
 
   return (
-    <div className="console p-4">
-      {/* Terminal input form */}
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <input
-          className="input input-bordered w-full"
-          type="text"
-          placeholder="Hostname"
-          value={hostname}
-          onChange={(e) => setHostname(e.target.value)}
-          required
-        />
-        <input
-          className="input input-bordered w-full"
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          className="input input-bordered w-full"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <textarea
-          className="textarea textarea-bordered w-full"
-          placeholder="Enter command(s)"
-          value={command}
-          onChange={(e) => setCommand(e.target.value)}
-          rows={3}
-        />
-        <button
-          className="btn btn-primary w-full"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? 'Executing...' : 'Execute'}
-        </button>
-      </form>
+    <div className="grid grid-cols-2">
+      <div></div>
+      <div className="console p-4">
+        {/* Terminal input form */}
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <div className="flex">
+            <div className="join h-12">
+              <input
+                className="input input-bordered w- join-item"
+                type="text"
+                placeholder="Hostname"
+                value={hostname}
+                onChange={(e) => setHostname(e.target.value)}
+                required
+              />
+              <input
+                className="input input-bordered join-item"
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+              <input
+                className="input input-bordered join-item"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                className="btn btn-primary join-item"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Executing..." : "Execute"}
+              </button>
+            </div>
 
-      <Terminal></Terminal>
+            <img src="logo.png" alt="Horribili" className="h-12 ml-auto" />
+          </div>
+
+          <div className="join join-vertical w-full pt-4">
+            {" "}
+            <textarea
+              className="textarea textarea-bordered w-full rounded-b-none"
+              placeholder="Enter command(s)"
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              rows={5}
+            />
+            <Terminal></Terminal>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
