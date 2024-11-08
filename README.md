@@ -10,12 +10,12 @@ A projekt fejlesztésének elkezdése
   
 2. Klónozd a repo-t (Windowson erősen ajánlott a [GitHub desktop](https://desktop.github.com/))
 ```bash
-git clone https://github.com/El-Terrifico-webfejlesztok/El-Terrifico-weboldal.git
+git clone https://github.com/Horribili-kft/Cisco-WebConfig
 ```
 3. Telepítsd a szükséges node csomagokat:
 ```bash
-cd El-Terrifico-weboldal
-npm install --include=dev
+cd Cisco-WebConfig
+npm install --include=dev --legacy-peer-deps
 ```
 4. Végül futtasd a development servert:
 ```bash
