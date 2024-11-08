@@ -1,5 +1,6 @@
 // components/SshConsole.tsx
 "use client";
+import PortGraphic from "@/components/PortGraphic";
 import Terminal from "@/components/Terminal";
 import { useSshStore } from "@/store/sshSlice";
 import { useState } from "react";
@@ -25,7 +26,10 @@ const SshConsole: React.FC = () => {
 
   return (
     <div className="grid grid-cols-2">
-      <div></div>
+      <div>
+        <PortGraphic/>
+
+      </div>
       <div className="console p-4">
         {/* Terminal input form */}
         <form onSubmit={handleSubmit} className="space-y-2">
@@ -60,7 +64,7 @@ const SshConsole: React.FC = () => {
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Executing..." : "Execute"}
+                {command ? (loading ? 'Executing...' : 'Execute') : 'Test connection'}
               </button>
             </div>
 
