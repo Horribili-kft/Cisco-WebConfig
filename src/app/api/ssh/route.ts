@@ -1,4 +1,3 @@
-// app/api/ssh/route.ts
 import { NextResponse } from 'next/server';
 import { Client } from 'ssh2';
 
@@ -11,43 +10,55 @@ const executeCommand = (conn: Client, command: string): Promise<string> => {
             }
 
             let result = '';
+            let error = '';
 
             stream
-                // I don't know the return type of data, so I just define that it can be converted into a string, which is true, since it is a reply from the SSH server
-                .on('data', (data: { toString: () => string; }) => {
-                    result += data.toString(); // Accumulate output
+                .on('data', (data: Buffer) => {
+                    result += data.toString(); // Accumulate stdout output
                 })
                 .on('close', () => {
+                    if (error) {
+                        return reject(`Error executing command "${command}": ${error}`);
+                    }
                     resolve(result.trim()); // Resolve with the command output
                 })
-                .stderr.on('data', (data) => {
-                    reject(`Error executing command "${command}": ${data.toString()}`); // Reject with error message
+                .stderr.on('data', (data: Buffer) => {
+                    error += data.toString(); // Accumulate stderr output
                 });
         });
     });
 };
 
 // Utility function to establish SSH connection and run commands
-
-// TODO: handle multiple command execution correctly. Currently we expect a list of commands, but we should expect a string, and we should execute each command by splitting them at newlines (or maybe ';'?)
 async function HandleSSH(hostname: string, username: string, password: string, commands: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
         const conn = new Client();
-        let output = ''
-        conn
+        let output = '';
+
+        conn.connect({
+            host: hostname,
+            // In the future we could add a port chooser.
+            port: 22, // Default SSH port
+            username: username,
+            password: password,
+        })
             .on('ready', async () => {
+                // If no commands are to be run but the connection was successful, notify the user.
                 if (commands.length === 0 || (commands[0].trim() === "" && commands.length === 1)) {
                     conn.end();
                     resolve('SSH connection established successfully, no commands to run.');
-                } else {
+                }
+
+                else {
                     try {
                         for (const command of commands) {
-                            console.log(`Executing command: ${command}`)
-                            output = await executeCommand(conn, command);
+                            console.log(`Executing command: ${command}`);
+                            output += await executeCommand(conn, command) + '\n'; // Accumulate all command outputs
                         }
                         conn.end();
-                        resolve(output); // Resolve with all command outputs
+                        resolve(output.trim()); // Resolve with all command outputs
                     } catch (error) {
+                        conn.end(); // Ensure the connection is closed in case of error
                         reject(error); // Reject if any command fails
                     }
                 }
@@ -55,12 +66,7 @@ async function HandleSSH(hostname: string, username: string, password: string, c
             .on('error', (err) => {
                 reject(`SSH Connection Error: ${err.message}`);
             })
-            .connect({
-                host: hostname,
-                port: 22, // Default SSH port
-                username: username,
-                password: password,
-            });
+
     });
 }
 
@@ -68,20 +74,39 @@ async function HandleSSH(hostname: string, username: string, password: string, c
 export async function POST(request: Request) {
     try {
         // Destructure json for future use
-        const { hostname, username, password, commands } = await request.json();
+        const { hostname, username, password, command: rawCommand } = await request.json();
+
 
         // Validate required fields
         if (!hostname || !username || !password) {
             return NextResponse.json({ error: 'Missing required fields: hostname, username, password.' }, { status: 400 });
         }
+        console.log(hostname,username,password)
+        console.log(rawCommand)
+
+        let commands: string[] = [];
+
+        // Validate that rawCommand is a string.
+        if (typeof rawCommand === 'string') {
+            // If it's a string, split by newlines (with or without carriage return) or semicolon
+            // This is also done in the frontend, so this shouldn't matter.
+            commands = rawCommand.split(/\r?\n|;/).filter((cmd: string) => cmd.trim() !== '');
+        }
+
+        else {
+            return NextResponse.json({
+                error: 'Invalid input: "command" should be a string'
+            }, { status: 400 });
+        }
+
 
         // Pass destructured output to the SSH handler
         const output = await HandleSSH(hostname, username, password, commands);
 
-        // Return the output of the commands if are successful, otherwise an error is thrown
+        // Return the output of the commands if successful, otherwise an error is thrown
         return NextResponse.json({ output });
-    } 
-    
+    }
+
     // If any error occurs during connection, it gets thrown here
     catch (error: unknown) {
         console.log(error);
