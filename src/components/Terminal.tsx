@@ -1,9 +1,11 @@
 // components/Terminal.tsx
 'use client';
-import { useSshStore } from '@/store/sshSlice';
+import { useCommandStore } from '@/store/commandStore';
+import { useTerminalStore } from '@/store/terminalStore';
 
 export default function Terminal() {
-    const { loading, terminalBuffer, clearTerminalBuffer } = useSshStore();
+    const { terminalBuffer, clearTerminalBuffer } = useTerminalStore();
+    const { loading } = useCommandStore()
 
     return (
         <div className="mockup-code p-4 bg-gray-900 text-gray-200 rounded-lg rounded-t-none shadow-md min-h-96">

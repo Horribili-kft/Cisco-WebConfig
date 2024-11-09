@@ -2,35 +2,51 @@
 "use client";
 import PortGraphic from "@/components/PortGraphic";
 import Terminal from "@/components/Terminal";
-import { useSshStore } from "@/store/sshSlice";
-import { useState } from "react";
+import { useConnectionStore } from "@/store/connectionStore";
+import { useCommandStore } from "@/store/commandStore";
+import { use, useState } from "react";
+import { useTerminalStore } from "@/store/terminalStore";
+
+
 
 const SshConsole: React.FC = () => {
-  const { disconnect, addToTerminalBuffer, connection, loading, executeCommands } = useSshStore();
+
+  const { connection, connect, disconnect } = useConnectionStore();
+  const { executeCommands } = useCommandStore();
+  const { addTerminalEntry } = useTerminalStore();
+
+
 
   const [hostname, setHostname] = useState(connection.hostname || '');
   const [username, setUsername] = useState(connection.username || '');
   const [password, setPassword] = useState(connection.password || '');
-  const [command, setCommand] = useState("");
+  const [commands, setCommands] = useState("");
+  const [loading, setLoading] = useState<boolean>(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (hostname && username && password) {
-      await executeCommands({
-        hostname,
-        username,
-        password,
-        rawCommands: command ? command : undefined,
-      }); // Execute all commands including the new one
+    setLoading(true)
+    // We execute commands if we have any, otherwise we try the connection
+    if (commands) {
+      console.log(connection.state)
+      // Try to connect, if unsuccessful, we return
+      if (!connection.state && !(await connect(hostname, username, password))) {
+        setLoading(false)
+        return
+      }
+      // Try to execute
+      await executeCommands(commands); // Execute all commands including the new one
     }
     else {
-      addToTerminalBuffer("Missing required fields", "error")
+      await connect(hostname, username, password)
     }
+    setLoading(false)
   };
+
+
 
   function handleDisconnect(e: React.FormEvent) {
     e.preventDefault();
-    addToTerminalBuffer("Disconnecting from host", 'command')
     disconnect()
   }
 
@@ -129,8 +145,8 @@ const SshConsole: React.FC = () => {
             <textarea
               className="textarea textarea-bordered w-full rounded-b-none focus:outline-none focus:bg-base-200"
               placeholder="Enter command(s)"
-              value={command}
-              onChange={(e) => setCommand(e.target.value)}
+              value={commands}
+              onChange={(e) => setCommands(e.target.value)}
               rows={12}
             />
             <Terminal></Terminal>
@@ -148,14 +164,14 @@ const SshConsole: React.FC = () => {
       )
     }
 
-    else if (connection.state && hostname && username && password && command)
+    else if (connection.state && hostname && username && password && commands)
       return ("Execute command")
 
 
 
     else if (!connection.state) {
 
-      return (command ? "Connect, execute, and get configuration" : "Connect and get configuration")
+      return (commands ? "Connect, execute, and get configuration" : "Connect and get configuration")
     }
     else {
       return ("Retest connection")
