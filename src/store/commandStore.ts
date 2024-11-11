@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { useConnectionStore } from './connectionStore';  
-import { useTerminalStore } from './terminalStore';      
+import { TerminalEntry, useTerminalStore } from './terminalStore';      
 
 interface CommandStore {
     loading: boolean;
-    executeCommands: (rawCommands:string) => Promise<void>;
+    executeCommands: (rawCommands: string) => Promise<void>;
 }
 
 export const useCommandStore = create<CommandStore>((set) => ({
@@ -23,29 +23,32 @@ export const useCommandStore = create<CommandStore>((set) => ({
 
         const commands = rawCommands?.split(/\r?\n/).filter(line => line.trim() !== '');
 
-        for (const cmd of commands) {
-            addTerminalEntry(cmd, 'command');
+        if (commands.length === 0) {
+            addTerminalEntry('No commands to execute', 'error');
+            set({ loading: false });
+            return;
+        }
+
+        try {
+            // Send all commands to the server in a single request
+            const response = await fetch('/api/ssh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...connection, commands }), 
+            });
+
+            const data = await response.json();
             
-            try {
-                const response = await fetch('/api/ssh', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...connection, command: cmd }),
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    const outputLines = data.output.split('\n');
-                    outputLines.forEach((line: string) => addTerminalEntry(line, 'output'));
-                } else {
-                    addTerminalEntry(data.error, 'error');
-                }
-
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                addTerminalEntry(errorMessage, 'error');
+            if (response.ok) {
+                const terminalEntries: TerminalEntry[] = data.output;
+                terminalEntries.forEach((entry) => addTerminalEntry(entry.content, entry.type));
+            } else {
+                addTerminalEntry(data.error, 'error');
             }
+
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            addTerminalEntry(errorMessage, 'error');
         }
 
         set({ loading: false });

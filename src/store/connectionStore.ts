@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useTerminalStore } from './terminalStore';  // Import the terminal store to add entries
+import { TerminalEntry, useTerminalStore } from './terminalStore';  // Import the terminal store to add entries
 
 interface Connection {
     hostname: string | null;
@@ -22,37 +22,54 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
         state: false,
     },
 
-    // This method now includes a check to verify if we can reach the host
-    // Returns true if it could connect, or false if it could not
+    // Method to connect and test the SSH connection using the new API
     connect: async (hostname, username, password) => {
         const { addTerminalEntry } = useTerminalStore.getState();
 
         try {
-            // Attempt to connect to the host (replace with your actual connection check logic)
+            // Send the connection request with no commands (empty array) to test the SSH connection
             const response = await fetch('/api/ssh', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ hostname, username, password }),
+                body: JSON.stringify({ hostname, username, password, commands: [] }), // No commands sent for connection test
             });
+
+            const data = await response.json();
 
             if (!response.ok) {
-                throw new Error('Failed to connect to the host');
+                throw new Error(data.error || 'Failed to connect to the host');
             }
 
-            // If the connection is successful, update the state
-            set({
-                connection: {
-                    hostname,
-                    username,
-                    password,
-                    state: true,
-                },
-            });
+            // Process the TerminalEntry[] response from the server
+            const terminalEntries: TerminalEntry[] = data.output;
+            terminalEntries.forEach((entry) => addTerminalEntry(entry.content, entry.type));
 
-            // Add a success message to the terminal buffer
-            
-            addTerminalEntry(`🟢 Successfully connected to ${hostname}`, 'output');
-            return true
+            // If there's at least one "output" entry, assume the connection was successful
+            const isConnected = terminalEntries.some(entry => entry.type === 'output' && entry.content.includes('Successfully connected'));
+
+            if (isConnected) {
+                set({
+                    connection: {
+                        hostname,
+                        username,
+                        password,
+                        state: true,
+                    },
+                });
+                return true;
+            } else {
+                // If no successful connection message, set state as disconnected
+                set({
+                    connection: {
+                        hostname,
+                        username,
+                        password,
+                        state: false,
+                    },
+                });
+                return false;
+            }
+
         } catch (error) {
             // If connection fails, update the connection state and add error to terminal buffer
             set({
@@ -65,15 +82,15 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
             });
 
             const errorMessage = error instanceof Error ? error.message : 'Unknown SSH error';
-            addTerminalEntry(`Connection error: ${errorMessage}`, 'error'); // Write the error directly to the terminal buffer
-            return false
+            addTerminalEntry(`Connection error: ${errorMessage}`, 'error');
+            return false;
         }
     },
 
     // Disconnect and clear any connection data
     disconnect: () => {
         const { addTerminalEntry } = useTerminalStore.getState();
-        addTerminalEntry("🟥 Disconnecting from host", 'command')
+        addTerminalEntry("🟥 Disconnecting from host", 'command');
         set({
             connection: {
                 hostname: null,

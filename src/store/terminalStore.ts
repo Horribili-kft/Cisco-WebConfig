@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-interface TerminalEntry {
+export interface TerminalEntry {
     type: 'command' | 'output' | 'error';
     content: string;
 }
