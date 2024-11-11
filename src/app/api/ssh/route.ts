@@ -128,8 +128,19 @@ export async function POST(request: Request) {
         const terminalEntries = await HandleSSH(hostname, username, password, commands);
         return NextResponse.json({ output: terminalEntries });
 
-    } catch (error: unknown) {
+    } 
+    // Error handling
+    catch (error: any) {
         console.error(error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown server error' }, { status: 500 });
+
+        // Check if the error is already in the TerminalEntry[] format
+        if (Array.isArray(error) && error.every((entry) => entry.type && entry.content)) {
+            // If error is in TerminalEntry[] format, return it as the output
+            return NextResponse.json({ output: error }, { status:  200 });
+        }
+
+        // Otherwise, return a generic 'unknown error' as a TerminalEntry
+        const unknownErrorEntry: TerminalEntry[] = [{ type: 'error', content: 'Unknown error occurred' }];
+        return NextResponse.json({ output: unknownErrorEntry }, { status: 200 });
     }
 }
