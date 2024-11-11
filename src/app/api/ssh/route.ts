@@ -1,7 +1,38 @@
 import { TerminalEntry } from '@/store/terminalStore';
 import { NextResponse } from 'next/server';
-import { Client } from 'ssh2';
+import { Algorithms, Client } from 'ssh2';
 
+const ciscoSSHalgorithms: Algorithms = {
+    kex: [
+        "diffie-hellman-group1-sha1",
+        "ecdh-sha2-nistp256",
+        "ecdh-sha2-nistp384",
+        "ecdh-sha2-nistp521",
+        "diffie-hellman-group-exchange-sha256",
+        "diffie-hellman-group14-sha1"
+    ],
+    cipher: [
+        "3des-cbc",
+        "aes128-ctr",
+        "aes192-ctr",
+        "aes256-ctr",
+        "aes128-gcm",
+        "aes128-gcm@openssh.com",
+        "aes256-gcm",
+        "aes256-gcm@openssh.com"
+    ],
+    serverHostKey: [
+        "ssh-rsa",
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521"
+    ],
+    hmac: [
+        "hmac-sha2-256",
+        "hmac-sha2-512",
+        "hmac-sha1"
+    ]
+}
 
 // Function to execute a single command and return the result as TerminalEntry[]
 const executeCommand = (conn: Client, command: string): Promise<TerminalEntry[]> => {
@@ -38,6 +69,10 @@ const executeCommand = (conn: Client, command: string): Promise<TerminalEntry[]>
     });
 };
 
+
+
+
+
 // Function to test SSH connection without running any commands
 const testConnection = (hostname: string, username: string, password: string): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
@@ -48,6 +83,7 @@ const testConnection = (hostname: string, username: string, password: string): P
             port: 22, // Default SSH port
             username: username,
             password: password,
+            algorithms: ciscoSSHalgorithms
         })
             .on('ready', () => {
                 conn.end(); // Close the connection once we know it's successful
@@ -70,6 +106,7 @@ async function HandleSSH(hostname: string, username: string, password: string, c
             port: 22, // Default SSH port
             username: username,
             password: password,
+            algorithms: ciscoSSHalgorithms
         })
             .on('ready', async () => {
                 if (commands.length === 0) {
@@ -81,9 +118,9 @@ async function HandleSSH(hostname: string, username: string, password: string, c
                         // If we get an enable password, we enter enable mode. This can't be done in another way
                         // because we can't pass data back and forth arbitrarily, we can only do so only once per request.
                         if (enablepass) {
-                            console.log("Entering enable mode...")
-                            const result = await executeCommand(conn, `enable${enablepass}\n`)
-                            terminalEntries = [...terminalEntries, ...result]
+                            console.log("Entering enable mode... (function not implemented)")
+                            //enable(conn, enablepass)
+                            //terminalEntries = [...terminalEntries, ...result]
                         }
 
                         for (const command of commands) {
