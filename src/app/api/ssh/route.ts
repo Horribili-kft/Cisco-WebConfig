@@ -60,7 +60,7 @@ const testConnection = (hostname: string, username: string, password: string): P
 };
 
 // Utility function to establish SSH connection and run commands
-async function HandleSSH(hostname: string, username: string, password: string, commands: string[]): Promise<TerminalEntry[]> {
+async function HandleSSH(hostname: string, username: string, password: string, commands: string[], enablepass?: string): Promise<TerminalEntry[]> {
     return new Promise((resolve, reject) => {
         const conn = new Client();
         let terminalEntries: TerminalEntry[] = [];
@@ -78,6 +78,14 @@ async function HandleSSH(hostname: string, username: string, password: string, c
                     resolve([{ type: 'output', content: `🟢 SSH connection to ${hostname} established successfully` }]);
                 } else {
                     try {
+                        // If we get an enable password, we enter enable mode. This can't be done in another way
+                        // because we can't pass data back and forth arbitrarily, we can only do so only once per request.
+                        if (enablepass) {
+                            console.log("Entering enable mode...")
+                            const result = await executeCommand(conn, `enable${enablepass}\n`)
+                            terminalEntries = [...terminalEntries, ...result]
+                        }
+
                         for (const command of commands) {
                             const commandResult = await executeCommand(conn, command);
                             terminalEntries = [...terminalEntries, ...commandResult]; // Accumulate terminal entries
@@ -97,8 +105,17 @@ async function HandleSSH(hostname: string, username: string, password: string, c
 }
 
 export async function POST(request: Request) {
+    interface RequestData {
+        hostname: string;
+        username: string;
+        password: string;
+        commands?: string | string[];
+        enablepass?: string;
+    }
+
     try {
-        const { hostname, username, password, commands: rawCommands } = await request.json();
+
+        const { hostname, username, password, commands: rawCommands, enablepass }: RequestData = await request.json();
 
         // Validate required fields
         if (!hostname || !username || !password) {
@@ -117,6 +134,7 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: 'Invalid input: "commands" should be a string or an array.' }, { status: 400 });
             }
         }
+        console.log(enablepass)
 
         // If no commands are given, test the SSH connection
         if (commands.length === 0) {
@@ -125,10 +143,10 @@ export async function POST(request: Request) {
         }
 
         // Otherwise, handle the SSH commands execution
-        const terminalEntries = await HandleSSH(hostname, username, password, commands);
+        const terminalEntries = await HandleSSH(hostname, username, password, commands, enablepass);
         return NextResponse.json({ output: terminalEntries });
 
-    } 
+    }
     // Error handling
     catch (error: any) {
         console.error(error);
@@ -136,7 +154,7 @@ export async function POST(request: Request) {
         // Check if the error is already in the TerminalEntry[] format
         if (Array.isArray(error) && error.every((entry) => entry.type && entry.content)) {
             // If error is in TerminalEntry[] format, return it as the output
-            return NextResponse.json({ output: error }, { status:  200 });
+            return NextResponse.json({ output: error }, { status: 200 });
         }
 
         // Otherwise, return a generic 'unknown error' as a TerminalEntry

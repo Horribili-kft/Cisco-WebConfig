@@ -5,12 +5,13 @@ interface Connection {
     hostname: string | null;
     username: string | null;
     password: string | null;
+    enablepass: string | null;
     state: boolean; // true if connected, false if not
 }
 
 interface ConnectionStore {
     connection: Connection;
-    connect: (hostname: string, username: string, password: string) => Promise<boolean>;
+    connect: (hostname: string, username: string, password: string, enablepass?: string) => Promise<boolean>;
     disconnect: () => void;
 }
 
@@ -19,11 +20,12 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
         hostname: null,
         username: null,
         password: null,
+        enablepass: null,
         state: false,
     },
 
-    // Method to connect and test the SSH connection using the new API
-    connect: async (hostname, username, password) => {
+    // Method to connect and test the SSH connection
+    connect: async (hostname, username, password, enablepass?) => {
         const { addTerminalEntry } = useTerminalStore.getState();
 
         try {
@@ -31,7 +33,7 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
             const response = await fetch('/api/ssh', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ hostname, username, password, commands: [] }), // No commands sent for connection test
+                body: JSON.stringify({ hostname, username, password, commands: [], enablepass }),
             });
 
             const data = await response.json();
@@ -53,9 +55,15 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
                         hostname,
                         username,
                         password,
+                        enablepass: enablepass || null,
                         state: true,
                     },
                 });
+
+                if (enablepass) {
+                    fetchConfiguration()
+                }
+
                 return true;
             } else {
                 // If no successful connection message, set state as disconnected
@@ -64,6 +72,7 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
                         hostname,
                         username,
                         password,
+                        enablepass: enablepass || null,
                         state: false,
                     },
                 });
@@ -77,6 +86,7 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
                     hostname,
                     username,
                     password,
+                    enablepass: enablepass || null,
                     state: false,
                 },
             });
@@ -96,8 +106,16 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
                 hostname: null,
                 username: null,
                 password: null,
+                enablepass: null,
                 state: false,
             },
         });
     },
 }));
+
+
+
+function fetchConfiguration() {
+    console.log('Function not implemented.');
+}
+

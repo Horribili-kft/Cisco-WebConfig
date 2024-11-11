@@ -17,9 +17,10 @@ const SshConsole: React.FC = () => {
   const [hostname, setHostname] = useState(connection.hostname || '');
   const [username, setUsername] = useState(connection.username || '');
   const [password, setPassword] = useState(connection.password || '');
+  const [enablePassword, setEnablePassword] = useState(connection.enablepass || '') 
   const [commands, setCommands] = useState("");
 
-  
+
   const [loading, setLoading] = useState<boolean>(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +30,7 @@ const SshConsole: React.FC = () => {
     if (commands) {
       console.log(connection.state)
       // Try to connect, if unsuccessful, we return
-      if (!connection.state && !(await connect(hostname, username, password))) {
+      if (!connection.state && !(await connect(hostname, username, password, enablePassword))) {
         setLoading(false)
         return
       }
@@ -37,7 +38,7 @@ const SshConsole: React.FC = () => {
       await executeCommands(commands); // Execute all commands including the new one
     }
     else {
-      await connect(hostname, username, password)
+      await connect(hostname, username, password, enablePassword)
     }
     setLoading(false)
   };
@@ -120,15 +121,25 @@ const SshConsole: React.FC = () => {
                       required
                       hidden={connection.state}
                     />
-                    <input
-                      className="input input-bordered join-item"
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      hidden={connection.state}
-                    />
+                    <div className="join-item">
+                      <input
+                        className="input input-bordered join-item w-1/2"
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        hidden={connection.state}
+                      />
+                      <input
+                        className="input input-bordered join-item w-1/2"
+                        type="password"
+                        placeholder="Enable Password (optional)"
+                        value={enablePassword}
+                        onChange={(e) => setEnablePassword(e.target.value)}
+                        hidden={connection.state}
+                      />
+                    </div>
                   </>}
                 <button
                   className="btn btn-primary join-item"
@@ -143,7 +154,6 @@ const SshConsole: React.FC = () => {
             </div>
 
             <div className="join join-vertical w-full pt-4">
-              {" "}
               <textarea
                 className="textarea textarea-bordered w-full rounded-b-none focus:outline-none focus:bg-base-200"
                 placeholder="Enter command(s)"
