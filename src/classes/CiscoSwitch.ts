@@ -1,4 +1,6 @@
-interface InterfaceConfig {
+import { Device } from "./Device";
+
+interface SwitchInterface {
     name: string;
     switchportMode: string;
     vlan: number;
@@ -10,25 +12,24 @@ interface VlanConfig {
     name: string;
 }
 
-export default class Switch {
+export default class Switch implements Device {
     hostname: string;
+    type: 'cisco_switch'; // 'switch'
     version: string;
-    interfaces: InterfaceConfig[];
+    interfaces: SwitchInterface[];
     vlans: VlanConfig[];
-    runningConfig: string;
 
-    constructor(runningConfig: string) {
-        this.runningConfig = runningConfig;
-        this.hostname = '';
-        this.version = '';
+    constructor(hostname: string = '', version: string = '') {
+        this.hostname = hostname;
+        this.type = 'cisco_switch';  
+        this.version = version;
         this.interfaces = [];
         this.vlans = [];
-        this.initializeFromConfig();
     }
 
     // Method to initialize the switch with running config output
-    private initializeFromConfig(): void {
-        const parsedConfig = parseRunningConfig(this.runningConfig);
+    parseConfig(runningConfig: string): void {
+        const parsedConfig = parseRunningConfig(runningConfig);
 
         this.hostname = parsedConfig.hostname;
         this.version = parsedConfig.version;
@@ -36,12 +37,44 @@ export default class Switch {
         this.vlans = parsedConfig.vlans;
     }
 
+    // Method to get the running-config by using the API to execute a command on the server. Requires enable privileges.
+    async fetchConfig(hostname: string, username: string, password: string, enablepass?: string): Promise<void> {
+        try {
+            const response = await fetch('/api/ssh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hostname,
+                    username,
+                    password,
+                    commands: ['show running-config'],  // Fetch running config
+                    enablepass,
+                }),
+            });
+
+            const data = await response.json();
+            const runningConfig = data.output.find((entry: any) => entry.type === 'output')?.content;
+
+
+            
+            if (runningConfig) {
+
+                this.parseConfig(runningConfig);  // Parse the config once fetched
+            } else {
+                throw new Error('No running config output found in server reply.');
+            }
+        } catch (error) {
+            console.error('Error fetching running config:', error);
+            throw new Error('Failed to fetch the running config.');
+        }
+    }
+
     // Method to get details about a specific interface by name
-    getInterfaceDetails(interfaceName: string): InterfaceConfig | undefined {
+    getInterfaceDetails(interfaceName: string): SwitchInterface | undefined {
         return this.interfaces.find((iface) => iface.name === interfaceName);
     }
 
-    // Method to display a summary of the switch configuration
+    // Method to display a summary of the switch configuration. Will probably go unused
     displayConfig(): void {
         console.log(`Switch Hostname: ${this.hostname}`);
         console.log(`Switch Version: ${this.version}`);
@@ -54,23 +87,18 @@ export default class Switch {
             console.log(`  - VLAN ${vlan.id}: ${vlan.name}`);
         });
     }
-
-    // Method to get raw running config
-    getRawRunningConfig(): string {
-        return this.runningConfig;
-    }
 }
 
-// Parsing the running config to extract useful information
-export function parseRunningConfig(config: string): { hostname: string; version: string; interfaces: InterfaceConfig[]; vlans: VlanConfig[] } {
+// Function to parse the running config to extract useful information
+export function parseRunningConfig(config: string): { hostname: string; version: string; interfaces: SwitchInterface[]; vlans: VlanConfig[] } {
     const configLines = config.split('\n');
 
-    const interfaces: InterfaceConfig[] = [];
+    const interfaces: SwitchInterface[] = [];
     const vlans: VlanConfig[] = [];
     let hostname = '';
     let version = '';
 
-    let currentInterface: InterfaceConfig | null = null;
+    let currentInterface: SwitchInterface | null = null;
 
     configLines.forEach(line => {
         // Parse hostname
@@ -120,7 +148,7 @@ export function parseRunningConfig(config: string): { hostname: string; version:
             }
         }
 
-        // Parse VLANs (simple parsing for VLANs)
+        // Parse VLANs
         const vlanMatch = line.match(/^vlan (\d+)/);
         if (vlanMatch) {
             const vlanId = parseInt(vlanMatch[1], 10);

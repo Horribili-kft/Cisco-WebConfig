@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { TerminalEntry, useTerminalStore } from './terminalStore';  // Import the terminal store to add entries
-import Switch from '@/classes/Switch';
+import Switch from '@/classes/CiscoSwitch';
 
 interface Connection {
     hostname: string | null;
@@ -24,8 +24,6 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
         enablepass: null,
         state: false,
     },
-
-
 
     // Method to connect and test the SSH connection
     connect: async (hostname, username, password, enablepass?) => {
@@ -142,6 +140,5 @@ async function fetchConfiguration(hostname: string, username: string, password: 
     catch (error) {
         console.log(error)
     }
-
 }
 

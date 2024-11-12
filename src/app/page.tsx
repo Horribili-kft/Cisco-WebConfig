@@ -1,17 +1,19 @@
 // components/SshConsole.tsx
 "use client";
-import PortGraphic from "@/components/PortGraphic";
+import PortGraphic from "@/components/Ports/PortGraphic";
 import Terminal from "@/components/Terminal";
 import { useConnectionStore } from "@/store/connectionStore";
 import { useCommandStore } from "@/store/commandStore";
 import { useState } from "react";
+import { useDeviceStore } from "@/store/deviceStore";
+import PortContainer from "@/components/Ports/PortContainer";
 
 
 
 const SshConsole: React.FC = () => {
 
-  const { connection, connect, disconnect } = useConnectionStore();
-  const { executeCommands } = useCommandStore();
+  const { connection, connectToDevice, disconnect, loading: connLoading } = useDeviceStore();
+  const { executeCommands, loading: execLoading } = useCommandStore();
 
 
   const [hostname, setHostname] = useState(connection.hostname || '');
@@ -30,7 +32,7 @@ const SshConsole: React.FC = () => {
     if (commands) {
       console.log(connection.state)
       // Try to connect, if unsuccessful, we return
-      if (!connection.state && !(await connect(hostname, username, password, enablePassword))) {
+      if (!connection.state && !(await connectToDevice(hostname, username, password, enablePassword))) {
         setLoading(false)
         return
       }
@@ -38,7 +40,7 @@ const SshConsole: React.FC = () => {
       await executeCommands(commands); // Execute all commands including the new one
     }
     else {
-      await connect(hostname, username, password, enablePassword)
+      await connectToDevice(hostname, username, password, enablePassword)
     }
     setLoading(false)
   };
@@ -79,6 +81,9 @@ const SshConsole: React.FC = () => {
             <PortGraphic />
             <PortGraphic />
             <PortGraphic />
+          </div>
+          <div>
+            <PortContainer></PortContainer>
           </div>
         </div>
 
