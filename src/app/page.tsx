@@ -134,7 +134,9 @@ const SshConsole: React.FC = () => {
                       <input
                         className="input input-bordered join-item w-1/2"
                         type="password"
-                        placeholder="Enable Password (optional)"
+                        // I've spent about 6 hours now trying to get the enable password inputting through SSH to work. I give up.
+                        // The current way to execute privileged commands is to create a privileged user in the first place. (username <username> privilege 15 password <password>)
+                        placeholder="Enable Password (work in progress)"
                         value={enablePassword}
                         onChange={(e) => setEnablePassword(e.target.value)}
                         hidden={connection.state}

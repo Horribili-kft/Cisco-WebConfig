@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { TerminalEntry, useTerminalStore } from './terminalStore';  // Import the terminal store to add entries
+import Switch from '@/classes/Switch';
 
 interface Connection {
     hostname: string | null;
@@ -24,6 +25,8 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
         state: false,
     },
 
+
+
     // Method to connect and test the SSH connection
     connect: async (hostname, username, password, enablepass?) => {
         const { addTerminalEntry } = useTerminalStore.getState();
@@ -39,7 +42,7 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to connect to the host');
+                throw new Error(data.content || 'Failed to connect to the host');
             }
 
             // Process the TerminalEntry[] response from the server
@@ -60,9 +63,7 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
                     },
                 });
 
-                if (enablepass) {
-                    fetchConfiguration()
-                }
+                fetchConfiguration(hostname, username, password, enablepass)
 
                 return true;
             } else {
@@ -114,8 +115,33 @@ export const useConnectionStore = create<ConnectionStore>((set) => ({
 }));
 
 
+// Running config segítségével létrehoz egy switch instancet, amit majd később fel lehet használni
+async function fetchConfiguration(hostname: string, username: string, password: string, enablepass?: string) {
+    try {
 
-function fetchConfiguration() {
-    console.log('Function not implemented.');
+        const response = await fetch('/api/ssh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hostname, username, password, commands: ['show running-config'], enablepass }),
+        });
+        const data = await response.json();
+        const output = data.output.find((entry: TerminalEntry) => entry.type === 'output')?.content;
+        if (output) {
+            console.log(`Nesze itt van egy running config, fő a biztonság: ${output}`)
+
+            // Initialize the Switch object using the running config
+            const switchInstance = new Switch(output);
+            console.log(switchInstance)
+        }
+
+        if (!response.ok) {
+            throw new Error(data[1].content || 'Failed to connect to the host');
+        }
+
+    }
+    catch (error) {
+        console.log(error)
+    }
+
 }
 

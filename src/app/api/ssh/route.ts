@@ -34,6 +34,32 @@ const ciscoSSHalgorithms: Algorithms = {
     ]
 }
 
+
+
+
+// Function to test SSH connection without running any commands
+const testConnection = (hostname: string, username: string, password: string): Promise<TerminalEntry[]> => {
+    return new Promise((resolve, reject) => {
+        const conn = new Client();
+
+        conn.connect({
+            host: hostname,
+            port: 22, // Default SSH port
+            username: username,
+            password: password,
+            algorithms: ciscoSSHalgorithms
+        })
+            .on('ready', () => {
+                conn.end(); // Close the connection once we know it's successful
+                resolve([{ type: 'output', content: `🟢 Successfully connected to ${hostname}` }]); // Return a success message
+            })
+            .on('error', (err) => {
+                reject([{ type: 'error', content: `SSH Connection Error: ${err.message}` }]); // Return an error message
+            });
+    });
+};
+
+
 // Function to execute a single command and return the result as TerminalEntry[]
 const executeCommand = (conn: Client, command: string): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
@@ -70,31 +96,6 @@ const executeCommand = (conn: Client, command: string): Promise<TerminalEntry[]>
 };
 
 
-
-
-
-// Function to test SSH connection without running any commands
-const testConnection = (hostname: string, username: string, password: string): Promise<TerminalEntry[]> => {
-    return new Promise((resolve, reject) => {
-        const conn = new Client();
-
-        conn.connect({
-            host: hostname,
-            port: 22, // Default SSH port
-            username: username,
-            password: password,
-            algorithms: ciscoSSHalgorithms
-        })
-            .on('ready', () => {
-                conn.end(); // Close the connection once we know it's successful
-                resolve([{ type: 'output', content: `🟢 Successfully connected to ${hostname}` }]); // Return a success message
-            })
-            .on('error', (err) => {
-                reject([{ type: 'error', content: `SSH Connection Error: ${err.message}` }]); // Return an error message
-            });
-    });
-};
-
 // Utility function to establish SSH connection and run commands
 async function HandleSSH(hostname: string, username: string, password: string, commands: string[], enablepass?: string): Promise<TerminalEntry[]> {
     return new Promise((resolve, reject) => {
@@ -115,13 +116,7 @@ async function HandleSSH(hostname: string, username: string, password: string, c
                     resolve([{ type: 'output', content: `🟢 SSH connection to ${hostname} established successfully` }]);
                 } else {
                     try {
-                        // If we get an enable password, we enter enable mode. This can't be done in another way
-                        // because we can't pass data back and forth arbitrarily, we can only do so only once per request.
-                        if (enablepass) {
-                            console.log("Entering enable mode... (function not implemented)")
-                            //enable(conn, enablepass)
-                            //terminalEntries = [...terminalEntries, ...result]
-                        }
+
 
                         for (const command of commands) {
                             const commandResult = await executeCommand(conn, command);
