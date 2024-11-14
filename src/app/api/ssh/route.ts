@@ -67,6 +67,9 @@ const executeCommand = (conn: Client, command: string): Promise<TerminalEntry[]>
 
             let result = '';
             let error = '';
+            setTimeout(() => {
+                conn.end()
+            }, 10000);
 
             stream
                 .on('data', (data: Buffer) => {

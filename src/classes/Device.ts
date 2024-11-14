@@ -7,6 +7,6 @@ export interface Device {
     ipAddress?: string;
     
     fetchConfig(hostname: string, username: string, password: string, enablepass?: string): unknown;
-    parseConfig(config: string): void;
+    parseConfig(config: string | JSON): void;
 }
 

@@ -62,24 +62,12 @@ const SshConsole: React.FC = () => {
         {/* Oldal bal oldala */}
         <div>
           <div className="bg-base-300 h-24 rounded-lg p-4 m-4">
-            {device instanceof LinuxDevice ? device.version+device.interfaces : null}
+            {/* Példa linuk konfiguráció kiírására */}
           </div>
           {/* Portgraphic container */}
-          <div className="p-4 flex flex-wrap justify-start">
-          </div>
-          <div>
-            {device instanceof Switch ? device.interfaces.map((iface, index) => (
-              <div key={index}>
-                <PortGraphic name={iface.name} />
-              </div>
-            ))
-              :
-              null}
-          </div>
+          <PortContainer/>
+
         </div>
-
-
-
         {/* Oldal jobb oldala*/}
         <div className="console p-4">
           {/* Terminal input form */}
