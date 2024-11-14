@@ -1,26 +1,92 @@
+import { TerminalEntry } from '@/store/terminalStore';
 import { NextResponse } from 'next/server';
-import { Client } from 'ssh2';
+import { Algorithms, Client } from 'ssh2';
 
-// Function to execute a single command
-const executeCommand = (conn: Client, command: string): Promise<string> => {
+const ciscoSSHalgorithms: Algorithms = {
+    kex: [
+        "diffie-hellman-group1-sha1",
+        "ecdh-sha2-nistp256",
+        "ecdh-sha2-nistp384",
+        "ecdh-sha2-nistp521",
+        "diffie-hellman-group-exchange-sha256",
+        "diffie-hellman-group14-sha1"
+    ],
+    cipher: [
+        "3des-cbc",
+        "aes128-ctr",
+        "aes192-ctr",
+        "aes256-ctr",
+        "aes128-gcm",
+        "aes128-gcm@openssh.com",
+        "aes256-gcm",
+        "aes256-gcm@openssh.com"
+    ],
+    serverHostKey: [
+        "ssh-rsa",
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521"
+    ],
+    hmac: [
+        "hmac-sha2-256",
+        "hmac-sha2-512",
+        "hmac-sha1"
+    ]
+}
+
+// Function to test SSH connection without running any commands
+const testConnection = (hostname: string, username: string, password: string): Promise<TerminalEntry[]> => {
+    return new Promise((resolve, reject) => {
+        const conn = new Client();
+
+        conn.connect({
+            host: hostname,
+            port: 22, // Default SSH port
+            username: username,
+            password: password,
+            algorithms: ciscoSSHalgorithms
+        })
+            .on('ready', () => {
+                conn.end(); // Close the connection once we know it's successful
+                resolve([{ type: 'output', content: `🟢 Successfully connected to ${hostname}` }]); // Return a success message
+            })
+            .on('error', (err) => {
+                reject([{ type: 'error', content: `SSH Connection Error: ${err.message}` }]); // Return an error message
+            });
+    });
+};
+
+
+// Function to execute a single command and return the result as TerminalEntry[]
+const executeCommand = (conn: Client, command: string): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
         conn.exec(command, (err, stream) => {
             if (err) {
-                return reject(`Error executing "${command}": ${err.message}`);
+                return reject([{ type: 'error', content: `Error executing "${command}": ${err.message}` }]);
             }
 
             let result = '';
             let error = '';
+            setTimeout(() => {
+                conn.end()
+            }, 10000);
 
             stream
                 .on('data', (data: Buffer) => {
                     result += data.toString(); // Accumulate stdout output
                 })
                 .on('close', () => {
+                    const entries: TerminalEntry[] = [
+                        { type: 'command', content: command } // Add the executed command as an entry
+                    ];
+
                     if (error) {
-                        return reject(`Error executing command "${command}": ${error}`);
+                        entries.push({ type: 'error', content: error.trim() });
+                    } else {
+                        entries.push({ type: 'output', content: result.trim() });
                     }
-                    resolve(result.trim()); // Resolve with the command output
+
+                    resolve(entries); // Resolve with the command and output/error entries
                 })
                 .stderr.on('data', (data: Buffer) => {
                     error += data.toString(); // Accumulate stderr output
@@ -29,86 +95,102 @@ const executeCommand = (conn: Client, command: string): Promise<string> => {
     });
 };
 
+
 // Utility function to establish SSH connection and run commands
-async function HandleSSH(hostname: string, username: string, password: string, commands: string[]): Promise<string> {
+async function HandleSSH(hostname: string, username: string, password: string, commands: string[], enablepass?: string): Promise<TerminalEntry[]> {
     return new Promise((resolve, reject) => {
         const conn = new Client();
-        let output = '';
+        let terminalEntries: TerminalEntry[] = [];
 
         conn.connect({
             host: hostname,
-            // In the future we could add a port chooser.
             port: 22, // Default SSH port
             username: username,
             password: password,
+            algorithms: ciscoSSHalgorithms
         })
             .on('ready', async () => {
-                // If no commands are to be run but the connection was successful, notify the user.
-                if (commands.length === 0 || (commands.length === 1 && commands[0].trim() === "")) {
+                if (commands.length === 0) {
+                    // If no commands are given, test connection and resolve
                     conn.end();
-                    resolve('SSH connection established successfully, no commands to run.');
-                }
-
-                else {
+                    resolve([{ type: 'output', content: `🟢 SSH connection to ${hostname} established successfully` }]);
+                } else {
                     try {
+
+
                         for (const command of commands) {
-                            console.log(`Executing command: ${command}`);
-                            output += await executeCommand(conn, command) + '\n'; // Accumulate all command outputs
+                            const commandResult = await executeCommand(conn, command);
+                            terminalEntries = [...terminalEntries, ...commandResult]; // Accumulate terminal entries
                         }
                         conn.end();
-                        resolve(output.trim()); // Resolve with all command outputs
+                        resolve(terminalEntries); // Resolve with all accumulated terminal entries
                     } catch (error) {
-                        conn.end(); // Ensure the connection is closed in case of error
-                        reject(error); // Reject if any command fails
+                        conn.end();
+                        reject([{ type: 'error', content: `Execution error: ${error instanceof Error ? error.message : error}` }]);
                     }
                 }
             })
             .on('error', (err) => {
-                reject(`SSH Connection Error: ${err.message}`);
-            })
-
+                reject([{ type: 'error', content: `SSH Connection Error: ${err.message}` }]);
+            });
     });
 }
 
 export async function POST(request: Request) {
+    interface RequestData {
+        hostname: string;
+        username: string;
+        password: string;
+        commands?: string | string[];
+        enablepass?: string;
+    }
+
     try {
-        // Destructure json for future use
-        const { hostname, username, password, command: rawCommand } = await request.json();
+
+        const { hostname, username, password, commands: rawCommands, enablepass }: RequestData = await request.json();
 
         // Validate required fields
         if (!hostname || !username || !password) {
             return NextResponse.json({ error: 'Missing required fields: hostname, username, password.' }, { status: 400 });
         }
 
-        console.log(hostname, username, password);
-        console.log(rawCommand);
-
         let commands: string[] = [];
 
-        // Check if rawCommand is provided and validate that it's a string.
-        if (rawCommand) {
-            if (typeof rawCommand === 'string') {
-                // If it's a string, split by newlines (with or without carriage return) or semicolon
-                commands = rawCommand.split(/\r?\n|;/).filter((cmd: string) => cmd.trim() !== '');
+        // If commands are provided, parse them. Otherwise, treat as an empty array.
+        if (rawCommands) {
+            if (typeof rawCommands === 'string') {
+                commands = rawCommands.split(/\r?\n|;/).filter((cmd: string) => cmd.trim() !== '');
+            } else if (Array.isArray(rawCommands)) {
+                commands = rawCommands.filter((cmd: string) => cmd.trim() !== '');
             } else {
-                return NextResponse.json({
-                    error: 'Invalid input: "command" should be a string.'
-                }, { status: 400 });
+                return NextResponse.json({ error: 'Invalid input: "commands" should be a string or an array.' }, { status: 400 });
             }
-        } else {
-            // If no command is provided, you can either set a default or handle this scenario
-            // For example, if it's okay not to provide a command:
-            commands = []; // No commands to run, just return empty output or test connection behavior
+        }
+        console.log(enablepass)
+
+        // If no commands are given, test the SSH connection
+        if (commands.length === 0) {
+            const connectionResult = await testConnection(hostname, username, password);
+            return NextResponse.json({ output: connectionResult });
         }
 
-        // Pass destructured output to the SSH handler
-        const output = await HandleSSH(hostname, username, password, commands);
+        // Otherwise, handle the SSH commands execution
+        const terminalEntries = await HandleSSH(hostname, username, password, commands, enablepass);
+        return NextResponse.json({ output: terminalEntries });
 
-        // Return the output of the commands if successful, otherwise an error is thrown
-        return NextResponse.json({ output });
+    }
+    // Error handling
+    catch (error: any) {
+        console.error(error);
 
-    } catch (error: unknown) {
-        console.log(error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : error || 'An error occurred' }, { status: 500 });
+        // Check if the error is already in the TerminalEntry[] format
+        if (Array.isArray(error) && error.every((entry) => entry.type && entry.content)) {
+            // If error is in TerminalEntry[] format, return it as the output
+            return NextResponse.json({ output: error }, { status: 200 });
+        }
+
+        // Otherwise, return a generic 'unknown error' as a TerminalEntry
+        const unknownErrorEntry: TerminalEntry[] = [{ type: 'error', content: 'Unknown error occurred' }];
+        return NextResponse.json({ output: unknownErrorEntry }, { status: 200 });
     }
 }
