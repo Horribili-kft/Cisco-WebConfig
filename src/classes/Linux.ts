@@ -100,7 +100,8 @@ export default class LinuxDevice implements Device {
                     hostname,
                     username,
                     password,
-                    commands: ['hostname', 'uname -r', 'ip a'], // Fetch hostname, kernel version, and interfaces
+                    devicetype: 'linux',
+                    commands: ['export TERM=dumb','hostname', 'uname -r', 'ip a'], // Fetch hostname, kernel version, and interfaces
                 }),
             });
 

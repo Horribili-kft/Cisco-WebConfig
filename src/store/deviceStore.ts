@@ -91,17 +91,18 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
                     device = new LinuxDevice(hostname);
                     break;
 
-                                /*
+                /*
                 case 'windows'
-
+                    
                 */
                 default:
-                    throw new Error (`Unsupported device type: ${deviceType}`);
+                    throw new Error(`Unsupported device type: ${deviceType}`);
             }
-            set({ loading: { state: true, msg: 'Fetching configuration...' } })
 
 
             if (device) {
+                set({ loading: { state: true, msg: 'Fetching configuration...' } })
+
                 console.log(device)
 
                 // Step 4: Fetch the configuration for the device
@@ -126,7 +127,7 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
             }
 
         } catch (error) {
-            console.error('Error connecting to or detecting device:', error);
+            console.log('Error connecting to or detecting device:', error);
             set({
                 connection: {
                     hostname: null,

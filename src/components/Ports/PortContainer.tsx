@@ -18,7 +18,7 @@ function MapPorts() {
         return (
             device.interfaces.map((iface, index) => (
                 <div key={index}>
-                    <PortGraphic name={iface.name} />
+                    <PortGraphic name={iface.shortname || iface.name} />
                 </div>
             ))
         );
