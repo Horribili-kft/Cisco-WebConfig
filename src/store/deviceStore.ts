@@ -3,6 +3,7 @@ import { TerminalEntry, useTerminalStore } from './terminalStore';
 import { Device } from '@/classes/Device';
 import detectDeviceType from '@/helpers/detectDeviceType';
 import CiscoSwitch from '@/classes/CiscoSwitch';
+import LinuxDevice from '@/classes/Linux';
 
 interface DeviceStore {
     loading: { state: boolean, msg: string | null }
@@ -86,10 +87,12 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
                 case 'cisco_switch':
                     device = new CiscoSwitch(hostname);  // hostname assumed as IP for now
                     break;
-                /*
                 case 'linux':
-                    device = new LinuxServer(hostname, hostname, true);
+                    device = new LinuxDevice(hostname);
                     break;
+
+                                /*
+                case 'windows'
 
                 */
                 default:

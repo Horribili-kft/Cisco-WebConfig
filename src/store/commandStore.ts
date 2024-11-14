@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { useConnectionStore } from './connectionStore';  
 import { TerminalEntry, useTerminalStore } from './terminalStore';      
+import { useDeviceStore } from './deviceStore';
 
 interface CommandStore {
     loading: boolean;
@@ -11,7 +11,7 @@ export const useCommandStore = create<CommandStore>((set) => ({
     loading: false,
 
     executeCommands: async (rawCommands) => {
-        const { connection } = useConnectionStore.getState();
+        const { connection } = useDeviceStore.getState();
         const { addTerminalEntry } = useTerminalStore.getState();
         set({ loading: true });
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'; // Import PropTypes
 
-function Interface({ name = "Unknown interface", type = "unkown" }) {
+function PortGraphic({ name = "Unknown interface", type = "unkown" }) {
     return (
         <div className="card bg-neutral m-1 w-[4.5rem] shadow-xl hover:cursor-pointer hover:brightness-110 active:scale-95 transition-all duration-75">
             <figure>
@@ -19,9 +19,9 @@ function Interface({ name = "Unknown interface", type = "unkown" }) {
 }
 
 // Define the prop types
-Interface.propTypes = {
+PortGraphic.propTypes = {
     name: PropTypes.string,
     type: PropTypes.string
 };
 
-export default Interface;
+export default PortGraphic;

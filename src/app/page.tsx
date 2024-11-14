@@ -1,25 +1,27 @@
 // components/SshConsole.tsx
 "use client";
-import PortGraphic from "@/components/Ports/PortGraphic";
 import Terminal from "@/components/Terminal";
-import { useConnectionStore } from "@/store/connectionStore";
 import { useCommandStore } from "@/store/commandStore";
 import { useState } from "react";
 import { useDeviceStore } from "@/store/deviceStore";
 import PortContainer from "@/components/Ports/PortContainer";
+import Switch from "@/classes/CiscoSwitch";
+import LinuxDevice from "@/classes/Linux";
+
+import PortGraphic from "@/components/Ports/PortGraphic";
 
 
 
 const SshConsole: React.FC = () => {
 
-  const { connection, connectToDevice, disconnect, loading: connLoading } = useDeviceStore();
+  const { connection, device, connectToDevice, disconnect, loading: connLoading } = useDeviceStore();
   const { executeCommands, loading: execLoading } = useCommandStore();
 
 
   const [hostname, setHostname] = useState(connection.hostname || '');
   const [username, setUsername] = useState(connection.username || '');
   const [password, setPassword] = useState(connection.password || '');
-  const [enablePassword, setEnablePassword] = useState(connection.enablepass || '') 
+  const [enablePassword, setEnablePassword] = useState(connection.enablepass || '')
   const [commands, setCommands] = useState("");
 
 
@@ -59,31 +61,20 @@ const SshConsole: React.FC = () => {
       <div className="grid grid-cols-2">
         {/* Oldal bal oldala */}
         <div>
-
+          <div className="bg-base-300 h-24 rounded-lg p-4 m-4">
+            {device instanceof LinuxDevice ? device.version+device.interfaces : null}
+          </div>
           {/* Portgraphic container */}
           <div className="p-4 flex flex-wrap justify-start">
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
-            <PortGraphic />
           </div>
           <div>
-            <PortContainer></PortContainer>
+            {device instanceof Switch ? device.interfaces.map((iface, index) => (
+              <div key={index}>
+                <PortGraphic name={iface.name} />
+              </div>
+            ))
+              :
+              null}
           </div>
         </div>
 

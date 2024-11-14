@@ -34,9 +34,6 @@ const ciscoSSHalgorithms: Algorithms = {
     ]
 }
 
-
-
-
 // Function to test SSH connection without running any commands
 const testConnection = (hostname: string, username: string, password: string): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
