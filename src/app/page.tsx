@@ -145,6 +145,14 @@ const SshConsole: React.FC = () => {
             </div>
           </form>
         </div>
+
+        {/* Oldal bal oldala*/}
+        <div>
+          <DeviceInfo />
+          {/* Portgraphic container */}
+          <PortContainer />
+        </div>
+
       </div>
     </>
   );

@@ -17,7 +17,7 @@ export default function Navbar() {
         </Link>
       </div>
 
-      <div className="navbar-center hidden lg:flex">
+      <div className="navbar-center flex">
         <ul className="menu menu-horizontal menu-sm px-1 space-x-2 [&>*]:font-semibold">
           {Links()}
         </ul>

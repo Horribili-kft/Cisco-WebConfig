@@ -2,8 +2,9 @@ import { TerminalEntry } from '@/store/terminalStore';
 import { NextResponse } from 'next/server';
 import { Algorithms, Client } from 'ssh2';
 import { Device } from '@/classes/Device';
-import executeCommandsViaShell from './ciscoSSHexecute';
-import executeCommand from './SSHexecute';
+import executeCommandsViaShell from './ts/ciscoSSHexecute';
+import executeCommand from './ts/SSHexecute';
+import executePythonScript from './python/python_handler';
 
 const ciscoSSHalgorithms: Algorithms = {
     kex: [
@@ -60,7 +61,7 @@ const testConnection = (hostname: string, username: string, password: string): P
 
 
 // Modify the HandleSSH function to use the new executeCommandsViaShell
-async function HandleSSH(hostname: string, username: string, password: string, commands: string[], devicetype?: Device["type"], enablepass?: string | undefined): Promise<TerminalEntry[]> {
+async function HandleSSH(hostname: string, username: string, password: string, commands: string[], devicetype?: Device["type"], enablepass?: string): Promise<TerminalEntry[]> {
     return new Promise((resolve, reject) => {
         const conn = new Client();
         let terminalEntries: TerminalEntry[] = [];
@@ -151,7 +152,7 @@ export async function POST(request: Request) {
         }
 
         // Otherwise, handle the SSH commands execution
-        const terminalEntries = await HandleSSH(hostname, username, password, commands, devicetype, enablepass);
+        const terminalEntries = await executePythonScript(hostname, username, password, commands, devicetype, enablepass);
         return NextResponse.json({ output: terminalEntries });
 
     }
