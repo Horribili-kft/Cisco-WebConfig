@@ -13,7 +13,7 @@ export default function PortContainer() {
 
 function MapPorts() {
     const { device } = useDeviceStore();
-
+    
     if (device instanceof CiscoSwitch) {
         return (
             device.interfaces.map((iface, index) => (
