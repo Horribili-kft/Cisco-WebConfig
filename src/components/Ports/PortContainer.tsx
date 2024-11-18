@@ -18,7 +18,8 @@ function MapPorts() {
         return (
             device.interfaces.map((iface, index) => (
                 <div key={index}>
-                    <PortGraphic name={iface.name} />
+                    {/* We *should* in all cases have a shortname for the interface, which in the worst case will be the same as the normal name. Better be safe than sorry though */}
+                    <PortGraphic name={iface.shortname || iface.name} />
                 </div>
             ))
         );

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { TerminalEntry, useTerminalStore } from './terminalStore';      
+import { TerminalEntry, useTerminalStore } from './terminalStore';
 import { useDeviceStore } from './deviceStore';
 
 interface CommandStore {
@@ -11,7 +11,7 @@ export const useCommandStore = create<CommandStore>((set) => ({
     loading: false,
 
     executeCommands: async (rawCommands) => {
-        const { connection } = useDeviceStore.getState();
+        const { device, connection } = useDeviceStore.getState();
         const { addTerminalEntry } = useTerminalStore.getState();
         set({ loading: true });
 
@@ -34,14 +34,15 @@ export const useCommandStore = create<CommandStore>((set) => ({
             const response = await fetch('/api/ssh', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...connection, commands }), 
+                body: JSON.stringify({ ...connection, devicetype: device?.type, commands }),
             });
 
             const data = await response.json();
-            
+
             if (response.ok) {
                 const terminalEntries: TerminalEntry[] = data.output;
                 terminalEntries.forEach((entry) => addTerminalEntry(entry.content, entry.type));
+                device?.fetchConfig(connection.hostname, connection.username, connection.password)
             } else {
                 addTerminalEntry(data.error, 'error');
             }

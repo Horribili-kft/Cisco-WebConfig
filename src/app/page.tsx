@@ -5,15 +5,8 @@ import { useCommandStore } from "@/store/commandStore";
 import { useState } from "react";
 import { useDeviceStore } from "@/store/deviceStore";
 import PortContainer from "@/components/Ports/PortContainer";
-import Switch from "@/classes/CiscoSwitch";
-import LinuxDevice from "@/classes/Linux";
-
-import PortGraphic from "@/components/Ports/PortGraphic";
-
-
 
 const SshConsole: React.FC = () => {
-
   const { connection, device, connectToDevice, disconnect, loading: connLoading } = useDeviceStore();
   const { executeCommands, loading: execLoading } = useCommandStore();
 
@@ -65,7 +58,7 @@ const SshConsole: React.FC = () => {
             {/* Példa linuk konfiguráció kiírására */}
           </div>
           {/* Portgraphic container */}
-          <PortContainer/>
+          <PortContainer />
 
         </div>
         {/* Oldal jobb oldala*/}
@@ -83,7 +76,6 @@ const SshConsole: React.FC = () => {
                       Username: <span className="text-info">{username}</span>
                     </p>
                   </div>
-
                   :
                   // If we are disconnected, we render the input fields
                   <>
@@ -125,6 +117,7 @@ const SshConsole: React.FC = () => {
                         onChange={(e) => setEnablePassword(e.target.value)}
                         hidden={connection.state}
                       />
+
                     </div>
                   </>}
                 <button
@@ -132,6 +125,7 @@ const SshConsole: React.FC = () => {
                   type="submit"
                   disabled={loading}
                 >
+
                   {buttonText()}
                 </button>
               </div>

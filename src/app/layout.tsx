@@ -1,5 +1,9 @@
+
+
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/components/navbar/Navbar";
+import ThemeProvider from "@/helpers/themeProvider";
 
 /* Metaadatok amit a böngésző megkap a weboldalról. SEO-kor hasznos, nekünk ebben a projetkben ez nem fontos */
 export const metadata: Metadata = {
@@ -15,6 +19,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ThemeProvider/> {/* Betölti a témát */}
+        <Navbar></Navbar>
         {children}
       </body>
     </html>
