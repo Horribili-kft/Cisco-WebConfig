@@ -1,5 +1,12 @@
 import type { Config } from "tailwindcss";
-import daisyui from "daisyui"
+
+// Az első téma ami itt meg van adva az alapértelmezett.
+// Sütiben tárolódik a kiválasztott téma
+export const themes = ["dark", "light", "black", "retro", "luxury", "cmyk", "synthwave", "aqua", "cyberpunk", "wireframe"]
+
+// We export the type of themes as well for the settings store (and anywhere else that it is needed really)
+export type Theme = typeof themes[number];
+
 
 const config: Config = {
   content: [
@@ -7,6 +14,9 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  plugins: [require('daisyui')],
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: themes,
+  },
 };
 export default config;

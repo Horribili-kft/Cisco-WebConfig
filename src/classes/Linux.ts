@@ -1,3 +1,4 @@
+import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
 
 interface LinuxInterface {
@@ -56,7 +57,7 @@ export default class LinuxDevice implements Device {
     }
 
     // This method now expects the config as a JSON object directly
-    parseConfig(config: any): void {
+    parseConfig(config: {output: TerminalEntry[]}): void {
         let hostnameOutput: string | undefined;
         let versionOutput: string | undefined;
         let interfacesRaw: string | undefined;

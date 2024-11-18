@@ -1,5 +1,6 @@
 // This file defines the default device interface. The device interface is meant to be used by other classes as implementations of devices.
 // It also defines a method to detect what kind of device we are connecting to.
+import { TerminalEntry } from "@/store/terminalStore";
 
 export interface Device {
     hostname: string;
@@ -7,6 +8,6 @@ export interface Device {
     ipAddress?: string;
     
     fetchConfig(hostname: string, username: string, password: string, enablepass?: string): unknown;
-    parseConfig(config: string | JSON): void;
+    parseConfig(config: string | JSON | {output: TerminalEntry[]}): void;
 }
 

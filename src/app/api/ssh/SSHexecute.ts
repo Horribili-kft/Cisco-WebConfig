@@ -26,6 +26,7 @@ const executeCommands = (conn: Client, commands: string[]): Promise<TerminalEntr
                     let error = '';
                     setTimeout(() => {
                         conn.end();
+                        reject({ type: 'error', content: "Command execution timed out"})
                     }, 10000);
 
                     stream

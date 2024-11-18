@@ -1,3 +1,4 @@
+import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
 
 interface SwitchInterface {
@@ -56,8 +57,8 @@ export default class Switch implements Device {
 
             const data = await response.json();
             const runningConfig = data.output
-                .filter((entry: any) => entry.type === 'output')  // Filter all entries with type 'output'
-                .map((entry: any) => entry.content)  // Extract the 'content' from each entry
+                .filter((entry: TerminalEntry) => entry.type === 'output')  // Filter all entries with type 'output'
+                .map((entry: TerminalEntry) => entry.content)  // Extract the 'content' from each entry
                 .join('');  // Concatenate all the content values into one string
 
             if (runningConfig) {

@@ -64,7 +64,7 @@ async function HandleSSH(hostname: string, username: string, password: string, c
     return new Promise((resolve, reject) => {
         const conn = new Client();
         let terminalEntries: TerminalEntry[] = [];
-
+        console.log(enablepass)
         conn.connect({
             host: hostname,
             port: 22, // Default SSH port
@@ -156,7 +156,7 @@ export async function POST(request: Request) {
 
     }
     // Error handling
-    catch (error: any) {
+    catch (error: unknown) {
         console.error(error);
 
         // Check if the error is already in the TerminalEntry[] format
