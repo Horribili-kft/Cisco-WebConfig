@@ -1,12 +1,13 @@
-// components/Terminal.tsx
 'use client';
-import { useSshStore } from '@/store/sshSlice';
+import { useCommandStore } from '@/store/commandStore';
+import { useTerminalStore } from '@/store/terminalStore';
 
 export default function Terminal() {
-    const { loading, terminalBuffer, clearTerminalBuffer } = useSshStore();
+    const { terminalBuffer, clearTerminalBuffer } = useTerminalStore();
+    const { loading } = useCommandStore();
 
     return (
-        <div className="mockup-code p-4 bg-gray-900 text-gray-200 rounded-lg rounded-t-none shadow-md min-h-96">
+        <div className="mockup-code p-4 bg-gray-900 text-gray-200 rounded-lg rounded-t-none shadow-md min-h-96 relative">
             {/* Render terminalBuffer entries */}
             {terminalBuffer.length > 0 ? (
                 terminalBuffer.map((entry, index) => (
@@ -28,10 +29,13 @@ export default function Terminal() {
             {loading && (
                 <pre data-prefix=">" className="text-warning animate-pulse"><code>Executing...</code></pre>
             )}
-            {terminalBuffer.length === 0 ? <></> 
-            : 
-            <button className='mt-2 btn btn-xs btn-ghost' onClick={() => clearTerminalBuffer()}>Clear terminal</button>
-            }
+            {terminalBuffer.length === 0 ? null : (
+                <button
+                    className="mt-2 btn btn-xs btn-ghost absolute top-[2px] left-28 transform"
+                    onClick={() => clearTerminalBuffer()}>
+                    Clear terminal
+                </button>
+            )}
         </div>
     );
 }
