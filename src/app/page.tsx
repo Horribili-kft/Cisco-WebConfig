@@ -5,6 +5,7 @@ import { useCommandStore } from "@/store/commandStore";
 import { useState } from "react";
 import { useDeviceStore } from "@/store/deviceStore";
 import PortContainer from "@/components/Ports/PortContainer";
+import DeviceInfo from "@/components/DeviceInfo";
 
 const SshConsole: React.FC = () => {
   const { connection, device, connectToDevice, disconnect, loading: connLoading } = useDeviceStore();
@@ -53,14 +54,7 @@ const SshConsole: React.FC = () => {
 
       <div className="grid grid-cols-2">
         {/* Oldal bal oldala */}
-        <div>
-          <div className="bg-base-300 h-24 rounded-lg p-4 m-4">
-            {/* Példa linuk konfiguráció kiírására */}
-          </div>
-          {/* Portgraphic container */}
-          <PortContainer />
 
-        </div>
         {/* Oldal jobb oldala*/}
         <div className="console p-4">
           {/* Terminal input form */}
@@ -129,8 +123,6 @@ const SshConsole: React.FC = () => {
                   {buttonText()}
                 </button>
               </div>
-
-
             </div>
 
             <div className="join join-vertical w-full pt-4">
@@ -152,8 +144,8 @@ const SshConsole: React.FC = () => {
           {/* Portgraphic container */}
           <PortContainer />
         </div>
-
       </div>
+
     </>
   );
 

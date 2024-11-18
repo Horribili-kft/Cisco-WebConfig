@@ -4,19 +4,20 @@ import { Device } from '@/classes/Device';
 
 const executePythonScript = (hostname: string, username: string, password: string, commands: string[], devicetype?: Device["type"], enablepass?: string): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
-        let filepath
+        let filepath: string = "src/app/api/ssh/python/"
         if (devicetype === 'cisco_switch' || devicetype === 'cisco_firewall' || devicetype === 'cisco_router') {
-            filepath = "./ssh_cisco.py"
+            // This needs to be fixed
+            //filepath += "ssh_cisco.py"
+            filepath += "ssh_linux.py"
         }
         else {
-            filepath = "./ssh_linux.py"
+            filepath += "ssh_linux.py"
         }
 
         const commandString = commands.map(cmd => `"${cmd}"`).join(" ");
 
-        // 
         // python ssh_linux ip username password "command 1" "command 2" ...
-        const pythonCommand = `python ${filepath} ${hostname} ${username} ${password} ${commandString}`;
+        const pythonCommand = `python -u ${filepath} ${hostname} ${username} ${password} ${commandString}`;
         console.log(pythonCommand)
 
         // Execute the Python script
