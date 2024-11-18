@@ -11,8 +11,10 @@ export default function Navbar() {
 
       {/* Navbar eleje (bal oldala) */}
       <div>
-        {/* Horribili logo */}
-        <img src="/logo.png" alt="Logo" className='max-h-8 cursor-pointer hover:scale-105 hover:animate-pulse hover:brightness-125 active:scale-95 transition-all' />
+        {/* Horribili" logo */}
+        <Link href={"/"}>
+          <img src="/logo.png" alt="Logo" className='max-h-8 cursor-pointer hover:scale-105 hover:animate-pulse hover:brightness-125 active:scale-95 transition-all' />
+        </Link>
       </div>
 
       <div className="navbar-center hidden lg:flex">

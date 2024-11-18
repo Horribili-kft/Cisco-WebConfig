@@ -13,9 +13,6 @@ export default function Settings() {
   } = useSettingsStore();
 
   return (
-
-
-
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-2">Cisco WebConfig settings</h1>
       <p className="brightness-75 mb-2">Settings here are persisted in the local browser storage</p>
@@ -44,6 +41,7 @@ export default function Settings() {
           description='By default, telnet is used to interface with Cisco devices for compatibility reasons. You can force SSH, but it very probably will not work on older devices. If Telnet works for you, there is practically no reason to change to this besides security.'>
           <input type="checkbox" className="toggle toggle-lg toggle-warning" checked={forceciscossh} onChange={(e) => setForceCiscoSSH(e.target.checked)} />
         </Setting>
+
 
 
       </div>
