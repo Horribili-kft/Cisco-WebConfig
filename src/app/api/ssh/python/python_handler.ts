@@ -1,14 +1,24 @@
 import { exec } from 'child_process';
 import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from '@/classes/Device';
+import HandleCiscoSSH from '../ts (deprecated)/ciscoSSHexecute';
 
-const executePythonScript = (hostname: string, username: string, password: string, commands: string[], devicetype?: Device["type"], enablepass?: string): Promise<TerminalEntry[]> => {
+const executePythonScript = (hostname: string, username: string, password: string, commands: string[], devicetype?: Device["type"], enablepass?: string, forceciscossh = false): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
         let filepath: string = "src/app/api/ssh/python/"
         if (devicetype === 'cisco_switch' || devicetype === 'cisco_firewall' || devicetype === 'cisco_router') {
-            // This needs to be fixed
-            //filepath += "ssh_cisco.py"
-            filepath += "ssh_linux.py"
+            // Use SSH if forced
+            if (forceciscossh) {
+                // This could be fixed, until then we are using the JS alternative which already works
+                // filepath += "ssh_cisco.py"
+                console.log("Using experimental CiscoSSH")
+                resolve(HandleCiscoSSH(hostname, username, password, commands, enablepass))
+                return
+            }
+            // Use telnet by default
+            else {
+                filepath += "telnet_cisco.py"
+            }
         }
         else {
             // Change this to cisco once it is ready.

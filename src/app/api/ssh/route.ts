@@ -44,10 +44,10 @@ export interface RequestData {
     devicetype?: Device["type"]
     enablepass?: string;
 
-    settings?: SSHCallSettings
+    settings?: CallSettings
 }
 
-interface SSHCallSettings {
+interface CallSettings {
     forceciscossh: boolean
 }
 
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         }
 
         // Otherwise, handle the SSH commands execution
-        const terminalEntries = await executePythonScript(hostname, username, password, commands, devicetype, enablepass);
+        const terminalEntries = await executePythonScript(hostname, username, password, commands, devicetype, enablepass, settings?.forceciscossh);
         return NextResponse.json({ output: terminalEntries });
 
     }

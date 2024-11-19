@@ -16,9 +16,8 @@ export default function Settings() {
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-2">Cisco WebConfig settings</h1>
       <p className="brightness-75 mb-2">Settings here are persisted in the local browser storage</p>
-
       <div>
-        {/* Theme Setting. Yet to be implemented */}
+        {/* Theme Setting*/}
         <Setting
           title="Theme"
           description="Choose your preferred website theme. (work in progress)">
@@ -38,14 +37,11 @@ export default function Settings() {
         {/* Force Cisco SSH setting. */}
         <Setting
           title='Force SSH on Cisco devices'
-          description='By default, telnet is used to interface with Cisco devices for compatibility reasons. You can force SSH, but it very probably will not work on older devices. If Telnet works for you, there is practically no reason to change to this besides security.'>
+          description='By default, telnet is used to interface with Cisco devices for compatibility reasons. You can force SSH, but it very probably will not work on older devices. SSH offers better security and may improve responsiveness, but treat this option as experimental'>
           <input type="checkbox" className="toggle toggle-lg toggle-warning" checked={forceciscossh} onChange={(e) => setForceCiscoSSH(e.target.checked)} />
         </Setting>
 
-
-
       </div>
-
     </div>
 
 

@@ -1,5 +1,37 @@
+import { Device } from "@/classes/Device";
 import { TerminalEntry } from "@/store/terminalStore";
-import { Client } from "ssh2";
+import { Algorithms, Client } from "ssh2";
+
+const ciscoSSHalgorithms: Algorithms = {
+    kex: [
+        "diffie-hellman-group1-sha1",
+        "ecdh-sha2-nistp256",
+        "ecdh-sha2-nistp384",
+        "ecdh-sha2-nistp521",
+        "diffie-hellman-group-exchange-sha256",
+        "diffie-hellman-group14-sha1"
+    ],
+    cipher: [
+        "aes128-ctr",
+        "aes192-ctr",
+        "aes256-ctr",
+        "aes128-gcm",
+        "aes128-gcm@openssh.com",
+        "aes256-gcm",
+        "aes256-gcm@openssh.com"
+    ],
+    serverHostKey: [
+        "ssh-rsa",
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521"
+    ],
+    hmac: [
+        "hmac-sha2-256",
+        "hmac-sha2-512",
+        "hmac-sha1"
+    ]
+}
 
 
 // Turns the raw output into output that we can read.
@@ -50,6 +82,45 @@ const processRawOutput = (rawOutput: string, commands: string[]): TerminalEntry[
     return terminalEntries;
 };
 
+
+async function HandleCiscoSSH(hostname: string, username: string, password: string, commands: string[], enablepass?: string): Promise<TerminalEntry[]> {
+    return new Promise((resolve, reject) => {
+        const conn = new Client();
+        let terminalEntries: TerminalEntry[] = [];
+        console.log(enablepass)
+        conn.connect({
+            host: hostname,
+            port: 22, // Default SSH port
+            username: username,
+            password: password,
+            algorithms: ciscoSSHalgorithms
+        })
+            .on('ready', async () => {
+                if (commands.length === 0) {
+                    resolve([{ type: 'output', content: `🟢 SSH connection to ${hostname} established successfully` }]);
+                } else {
+                    try {
+                        // We will execute commands with a different method depending on what kind of device we connect to
+                        // This is necessary, because at cisco (even with linux based IOS) and linux execution methods are not compatible. Other OSs are not tested yet.
+                        const commandResult = await executeCommandsViaShell(conn, commands);
+
+                        terminalEntries = [...terminalEntries, ...commandResult];
+                        resolve(terminalEntries);
+                    }
+
+                    catch (error) {
+                        reject([{ type: 'error', content: `Execution error: ${error instanceof Error ? error.message : error}` }]);
+                    } finally {
+                        conn.end(); // Close the connection after all commands are processed
+                    }
+                }
+            })
+            .on('error', (err) => {
+                reject([{ type: 'error', content: `SSH Connection Error: ${err.message}` }]);
+            });
+    });
+}
+
 const executeCommandsViaShell = (conn: Client, commands: string[]): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
         let result = ''; // To hold the complete output (raw)
@@ -86,4 +157,4 @@ const executeCommandsViaShell = (conn: Client, commands: string[]): Promise<Term
     });
 };
 
-export default executeCommandsViaShell
+export default HandleCiscoSSH

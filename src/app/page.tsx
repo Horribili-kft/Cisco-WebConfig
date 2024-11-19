@@ -42,7 +42,6 @@ const SshConsole: React.FC = () => {
   };
 
 
-
   function handleDisconnect(e: React.FormEvent) {
     e.preventDefault();
     disconnect()

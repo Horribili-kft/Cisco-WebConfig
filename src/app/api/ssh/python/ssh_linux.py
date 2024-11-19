@@ -19,7 +19,7 @@ def execute_ssh_command(ip, username, password=None, command=None):
         # If commands are provided as a list
         if isinstance(command, list):
             for cmd in command:
-                result.append({"type": "command", "content": cmd})
+                result.append({"type": "command", "content": cmd}) 
                 stdin, stdout, stderr = client.exec_command(cmd)
                 output = stdout.read().decode().strip()
                 error = stderr.read().decode().strip()
