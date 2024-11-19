@@ -6,8 +6,6 @@ import { useState } from "react";
 import { useDeviceStore } from "@/store/deviceStore";
 import PortContainer from "@/components/Ports/PortContainer";
 import DeviceInfo from "@/components/DeviceInfo";
-import { Container } from "postcss";
-import PortGraphic from "@/components/Ports/PortGraphic";
 
 const SshConsole: React.FC = () => {
   const {
@@ -58,24 +56,9 @@ const SshConsole: React.FC = () => {
 
   return (
     <>
-      <progress
-        className="m-0 p-0 progress w-full h-1 absolute rounded-none"
-        hidden={!loading}
-      ></progress>
+      <progress className="m-0 p-0 progress w-full h-1 absolute rounded-none" hidden={!loading}></progress>
 
       <div className="grid grid-cols-2">
-        {/* Oldal bal oldala */}
-
-        {/* Oldal bal oldala*/}
-        <div>
-          
-
-          <DeviceInfo />
-
-          {/* Portgraphic container */}
-          <PortContainer />
-        </div>
-
         {/* Oldal jobb oldala*/}
         <div className="console p-4">
           {/* Terminal input form */}
@@ -170,7 +153,7 @@ const SshConsole: React.FC = () => {
           </form>
         </div>
 
-        {/* Oldal bal oldala*/}
+        {/* Oldal jobb oldala*/}
         <div>
           <DeviceInfo />
           {/* Portgraphic container */}
