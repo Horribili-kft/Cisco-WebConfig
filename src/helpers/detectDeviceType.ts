@@ -1,49 +1,41 @@
 import { TerminalEntry } from "@/store/terminalStore";
+import { apicall } from "./apicall";
 
 export default async function detectDeviceType(hostname: string, username: string, password: string, enablepass?: string): Promise<string> {
     try {
 
         // TEST FOR CISCO
         // Issue a command that is safe across multiple devices
-        const response = await fetch('/api/ssh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                hostname,
-                username,
-                password,
-                devicetype: 'cisco_switch',
-                commands: ['terminal length 0' , 'show version'],  // For Cisco devices
-                enablepass
-            }),
+        const ciscoResponse = await apicall({
+            hostname,
+            username,
+            password,
+            devicetype: 'cisco_switch',
+            commands: ['terminal length 0', 'show version'],  // For Cisco devices
+            enablepass
         });
-
-        const data = await response.json();
+        const ciscoData = await ciscoResponse.json();
 
         // Detect Cisco switch, router, or firewall
-        if (data &&  checkForKeywordInOutputs(data, 'cisco')) {
-            if (checkForKeywordInOutputs(data, 'switch')) {
+        if (ciscoData && checkForKeywordInOutputs(ciscoData, 'cisco')) {
+            if (checkForKeywordInOutputs(ciscoData, 'switch')) {
                 return 'cisco_switch';
-            } 
-            else if (checkForKeywordInOutputs(data, 'router')) {
+            }
+            else if (checkForKeywordInOutputs(ciscoData, 'router')) {
                 return 'cisco_router';
-            } 
-            else if (checkForKeywordInOutputs(data, 'ASA') ||  checkForKeywordInOutputs(data, 'security')) {
+            }
+            else if (checkForKeywordInOutputs(ciscoData, 'ASA') || checkForKeywordInOutputs(ciscoData, 'security')) {
                 return 'cisco_firewall';
             }
         }
 
         // TEST FOR LINUX
-        const linuxResponse = await fetch('/api/ssh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                hostname,
-                username,
-                password,
-                devicetype: 'linux',
-                commands: ['export TERM=dumb', 'uname -a', 'cat /etc/os-release']  // Linux commands
-            }),
+        const linuxResponse = await apicall({
+            hostname,
+            username,
+            password,
+            devicetype: 'linux',
+            commands: ['export TERM=dumb', 'uname -a', 'cat /etc/os-release']  // Linux commands
         });
 
         const linuxData = await linuxResponse.json();
@@ -53,18 +45,13 @@ export default async function detectDeviceType(hostname: string, username: strin
         }
 
         // TEST FOR WINDOWS
-        const windowsResponse = await fetch('/api/ssh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                hostname,
-                username,
-                password,
-                devicetype: 'windows',
-                commands: ['ver']  // Windows command
-            }),
+        const windowsResponse = await apicall({
+            hostname,
+            username,
+            password,
+            devicetype: 'windows',
+            commands: ['ver']  // Windows command
         });
-
         const windowsData = await windowsResponse.json();
         const windowsOutput = checkForKeywordInOutputs(windowsData, 'windows')
 
@@ -82,16 +69,9 @@ export default async function detectDeviceType(hostname: string, username: strin
 }
 
 // Check if a keyword is in any of the terminalentry output fields.
-function checkForKeywordInOutputs(
-    data: { output: TerminalEntry[] },
-    keyword: string
-):
-    string | null {
-    console.log(data)
-    console.log(keyword)
+function checkForKeywordInOutputs(data: { output: TerminalEntry[] }, keyword: string): string | null {
     const isKeywordFound = data.output.some(
         (entry) => entry.type === 'output' && entry.content.toLowerCase().includes(keyword.toLowerCase())
     );
-    console.log(isKeywordFound)
     return isKeywordFound ? keyword : null;
 }

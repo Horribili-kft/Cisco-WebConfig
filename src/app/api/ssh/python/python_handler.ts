@@ -11,6 +11,7 @@ const executePythonScript = (hostname: string, username: string, password: strin
             filepath += "ssh_linux.py"
         }
         else {
+            // Change this to cisco once it is ready.
             filepath += "ssh_linux.py"
         }
 
@@ -21,6 +22,9 @@ const executePythonScript = (hostname: string, username: string, password: strin
         console.log(pythonCommand)
 
         // Execute the Python script
+        // As of now the script execution takes a long time because of the overhead of starting up the
+        // python interpreter for each run (takes an obscenely long time compared to the runtime of the script)
+        // We could use pyinstaller to compile it to machine code, I tested it and it works, and it's fast.
         exec(pythonCommand, (error, stdout, stderr) => {
             if (error) {
                 reject([{ type: 'error', content: `Execution error: ${stderr || error.message}` }]);

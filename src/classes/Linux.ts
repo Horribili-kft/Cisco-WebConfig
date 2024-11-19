@@ -1,5 +1,6 @@
 import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
+import { apicall } from "@/helpers/apicall";
 
 interface LinuxInterface {
     name: string;
@@ -57,7 +58,7 @@ export default class LinuxDevice implements Device {
     }
 
     // This method now expects the config as a JSON object directly
-    parseConfig(config: {output: TerminalEntry[]}): void {
+    parseConfig(config: { output: TerminalEntry[] }): void {
         let hostnameOutput: string | undefined;
         let versionOutput: string | undefined;
         let interfacesRaw: string | undefined;
@@ -94,18 +95,13 @@ export default class LinuxDevice implements Device {
     // Method to fetch system details from a Linux machine via SSH
     async fetchConfig(hostname: string, username: string, password: string): Promise<void> {
         try {
-            const response = await fetch('/api/ssh', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    hostname,
-                    username,
-                    password,
-                    devicetype: 'linux',
-                    commands: ['export TERM=dumb','hostname', 'uname -r', 'ip a'], // Fetch hostname, kernel version, and interfaces
-                }),
+            const response = await apicall({
+                hostname,
+                username,
+                password,
+                devicetype: 'linux',
+                commands: ['export TERM=dumb', 'hostname', 'uname -r', 'ip a'], // Fetch hostname, kernel version, and interfaces
             });
-
             if (!response.ok) {
                 throw new Error('Failed to fetch system config. Status: ' + response.status);
             }

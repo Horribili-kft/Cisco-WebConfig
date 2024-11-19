@@ -4,6 +4,7 @@ import { Device } from '@/classes/Device';
 import detectDeviceType from '@/helpers/detectDeviceType';
 import CiscoSwitch from '@/classes/CiscoSwitch';
 import LinuxDevice from '@/classes/Linux';
+import { apicall } from '@/helpers/apicall';
 
 interface DeviceStore {
     loading: { state: boolean, msg: string | null }
@@ -45,18 +46,13 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
         set({ loading: { state: true, msg: 'Trying to connect...' } })
         try {
             // Step 1: Test connection to the device
-            const connectionResponse = await fetch('/api/ssh', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    hostname,
-                    username,
-                    password,
-                    // Send the connection request with no commands (empty array) to test the SSH connection
-                    commands: [],
-                    enablepass
-                }),
+            const connectionResponse = await apicall({
+                hostname,
+                username,
+                password,
+                commands: [],
             });
+            
             const data = await connectionResponse.json();
 
             if (!connectionResponse.ok) {

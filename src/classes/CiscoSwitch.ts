@@ -1,5 +1,6 @@
 import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
+import { apicall } from "@/helpers/apicall";
 
 interface SwitchInterface {
     name: string;
@@ -42,17 +43,13 @@ export default class Switch implements Device {
     // Method to get the running-config by using the API to execute a command on the server. Requires enable privileges.
     async fetchConfig(hostname: string, username: string, password: string, enablepass?: string): Promise<void> {
         try {
-            const response = await fetch('/api/ssh', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    hostname,
-                    username,
-                    password,
-                    commands: ['terminal length 0', 'show running-config'],
-                    devicetype: 'cisco_switch',
-                    enablepass,
-                }),
+            const response = await apicall({
+                hostname,
+                username,
+                password,
+                commands: ['terminal length 0', 'show running-config'],
+                devicetype: 'cisco_switch',
+                enablepass,
             });
 
             const data = await response.json();
