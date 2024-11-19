@@ -6,53 +6,75 @@ import { useState } from "react";
 import { useDeviceStore } from "@/store/deviceStore";
 import PortContainer from "@/components/Ports/PortContainer";
 import DeviceInfo from "@/components/DeviceInfo";
+import { Container } from "postcss";
+import PortGraphic from "@/components/Ports/PortGraphic";
 
 const SshConsole: React.FC = () => {
-  const { connection, device, connectToDevice, disconnect, loading: connLoading } = useDeviceStore();
+  const {
+    connection,
+    device,
+    connectToDevice,
+    disconnect,
+    loading: connLoading,
+  } = useDeviceStore();
   const { executeCommands, loading: execLoading } = useCommandStore();
 
-
-  const [hostname, setHostname] = useState(connection.hostname || '');
-  const [username, setUsername] = useState(connection.username || '');
-  const [password, setPassword] = useState(connection.password || '');
-  const [enablePassword, setEnablePassword] = useState(connection.enablepass || '')
+  const [hostname, setHostname] = useState(connection.hostname || "");
+  const [username, setUsername] = useState(connection.username || "");
+  const [password, setPassword] = useState(connection.password || "");
+  const [enablePassword, setEnablePassword] = useState(
+    connection.enablepass || ""
+  );
   const [commands, setCommands] = useState("");
 
-
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true)
+    setLoading(true);
     // We execute commands if we have any, otherwise we try the connection
     if (commands) {
-      console.log(connection.state)
+      console.log(connection.state);
       // Try to connect, if unsuccessful, we return
-      if (!connection.state && !(await connectToDevice(hostname, username, password, enablePassword))) {
-        setLoading(false)
-        return
+      if (
+        !connection.state &&
+        !(await connectToDevice(hostname, username, password, enablePassword))
+      ) {
+        setLoading(false);
+        return;
       }
       // Try to execute
       await executeCommands(commands); // Execute all commands including the new one
+    } else {
+      await connectToDevice(hostname, username, password, enablePassword);
     }
-    else {
-      await connectToDevice(hostname, username, password, enablePassword)
-    }
-    setLoading(false)
+    setLoading(false);
   };
-
 
   function handleDisconnect(e: React.FormEvent) {
     e.preventDefault();
-    disconnect()
+    disconnect();
   }
 
   return (
     <>
-      <progress className="m-0 p-0 progress w-full h-1 absolute rounded-none" hidden={!loading}></progress>
+      <progress
+        className="m-0 p-0 progress w-full h-1 absolute rounded-none"
+        hidden={!loading}
+      ></progress>
 
       <div className="grid grid-cols-2">
         {/* Oldal bal oldala */}
+
+        {/* Oldal bal oldala*/}
+        <div>
+          
+
+          <DeviceInfo />
+
+          {/* Portgraphic container */}
+          <PortContainer />
+        </div>
 
         {/* Oldal jobb oldala*/}
         <div className="console p-4">
@@ -60,16 +82,28 @@ const SshConsole: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-2">
             <div className="flex">
               <div className="join join-vertical w-full">
-                {connection.state ?
+                {connection.state ? (
                   // If we are connected, we don't render the input fields
                   <div className="h-12 join-item rounded-t-lg flex align-middle items-center bg-base-200">
-                    <button className="btn btn-xs btn-warning m-2" onClick={handleDisconnect}>Disconnect</button>
+                    <button
+                      className="btn btn-xs btn-warning m-2"
+                      onClick={handleDisconnect}
+                    >
+                      Disconnect
+                    </button>
                     <p className="text-justify">
-                      Hostname: <a href={`https://${hostname}`} target="_blank" className="text-info link-hover">{hostname} </a>
+                      Hostname:{" "}
+                      <a
+                        href={`https://${hostname}`}
+                        target="_blank"
+                        className="text-info link-hover"
+                      >
+                        {hostname}{" "}
+                      </a>
                       Username: <span className="text-info">{username}</span>
                     </p>
                   </div>
-                  :
+                ) : (
                   // If we are disconnected, we render the input fields
                   <>
                     <input
@@ -110,15 +144,14 @@ const SshConsole: React.FC = () => {
                         onChange={(e) => setEnablePassword(e.target.value)}
                         hidden={connection.state}
                       />
-
                     </div>
-                  </>}
+                  </>
+                )}
                 <button
                   className="btn btn-primary join-item"
                   type="submit"
                   disabled={loading}
                 >
-
                   {buttonText()}
                 </button>
               </div>
@@ -151,26 +184,22 @@ const SshConsole: React.FC = () => {
   function buttonText() {
     // If loading display a loading icon in the button
     if (loading) {
-      return (
-        <span className="loading loading-bars"></span>
-      )
+      return <span className="loading loading-bars"></span>;
     }
     // If we are connected and there is something in the commands textbox
     else if (connection.state && hostname && username && password && commands)
-      return ("Execute command")
+      return "Execute command";
     // If we are disconnected...
     else if (!connection.state) {
-      return (commands ? "Connect and get configuration, then execute" : "Connect and get configuration")
+      return commands
+        ? "Connect and get configuration, then execute"
+        : "Connect and get configuration";
     }
     // If we are connected and nothing is in the commands textbox
     else {
-      return ("Retest connection")
+      return "Retest connection";
     }
   }
-
 };
-
-
-
 
 export default SshConsole;
