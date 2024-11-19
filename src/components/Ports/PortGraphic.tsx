@@ -14,6 +14,8 @@ function PortGraphic({ name = "Unknown interface", type = "unkown" }) {
                 </svg>
             </figure>
             <p className='text-center text-xs pb-2 pl-2 pr-2'>{name}</p>
+            <p className='text-center text-xs pb-2 pl-2 pr-2'>{type}</p>
+
         </div>
     )
 }

@@ -9,15 +9,22 @@ A projekt fejlesztésének elkezdése
 1. Telepítsd a [node.js-t](https://nodejs.org/)
   
 2. Klónozd a repo-t (Windowson erősen ajánlott a [GitHub desktop](https://desktop.github.com/))
+
 ```bash
 git clone https://github.com/Horribili-kft/Cisco-WebConfig
 ```
+
 3. Telepítsd a szükséges node csomagokat:
+
 ```bash
 cd Cisco-WebConfig
 npm install --include=dev --legacy-peer-deps
 ```
-4. Végül futtasd a development servert:
+4. Telepítsd a szükséges python csomagokat (telepíts pythont ha még nincs):
+```
+pip install paramiko
+```
+5. Végül futtasd a development servert:
 ```bash
 npm  run  dev
 ```

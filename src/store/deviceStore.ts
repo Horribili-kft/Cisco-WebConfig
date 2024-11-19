@@ -4,6 +4,7 @@ import { Device } from '@/classes/Device';
 import detectDeviceType from '@/helpers/detectDeviceType';
 import CiscoSwitch from '@/classes/CiscoSwitch';
 import LinuxDevice from '@/classes/Linux';
+import { apicall } from '@/helpers/apicall';
 
 interface DeviceStore {
     loading: { state: boolean, msg: string | null }
@@ -45,18 +46,13 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
         set({ loading: { state: true, msg: 'Trying to connect...' } })
         try {
             // Step 1: Test connection to the device
-            const connectionResponse = await fetch('/api/ssh', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    hostname,
-                    username,
-                    password,
-                    // Send the connection request with no commands (empty array) to test the SSH connection
-                    commands: [],
-                    enablepass
-                }),
+            const connectionResponse = await apicall({
+                hostname,
+                username,
+                password,
+                commands: [],
             });
+            
             const data = await connectionResponse.json();
 
             if (!connectionResponse.ok) {
@@ -91,17 +87,18 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
                     device = new LinuxDevice(hostname);
                     break;
 
-                                /*
+                /*
                 case 'windows'
-
+                    
                 */
                 default:
-                    throw new Error (`Unsupported device type: ${deviceType}`);
+                    throw new Error(`Unsupported device type: ${deviceType}`);
             }
-            set({ loading: { state: true, msg: 'Fetching configuration...' } })
 
 
             if (device) {
+                set({ loading: { state: true, msg: 'Fetching configuration...' } })
+
                 console.log(device)
 
                 // Step 4: Fetch the configuration for the device
@@ -126,7 +123,7 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
             }
 
         } catch (error) {
-            console.error('Error connecting to or detecting device:', error);
+            console.log('Error connecting to or detecting device:', error);
             set({
                 connection: {
                     hostname: null,

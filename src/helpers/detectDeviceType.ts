@@ -1,70 +1,61 @@
 import { TerminalEntry } from "@/store/terminalStore";
+import { apicall } from "./apicall";
 
 export default async function detectDeviceType(hostname: string, username: string, password: string, enablepass?: string): Promise<string> {
     try {
 
         // TEST FOR CISCO
         // Issue a command that is safe across multiple devices
-        const response = await fetch('/api/ssh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                hostname,
-                username,
-                password,
-                commands: ['show version'],  // For Cisco devices
-                enablepass
-            }),
+        const ciscoResponse = await apicall({
+            hostname,
+            username,
+            password,
+            devicetype: 'cisco_switch',
+            commands: ['terminal length 0', 'show version'],  // For Cisco devices
+            enablepass
         });
-
-        const data = await response.json();
-        const output = data.output.find((entry: TerminalEntry) => entry.type === 'output')?.content;
+        const ciscoData = await ciscoResponse.json();
 
         // Detect Cisco switch, router, or firewall
-        if (output) {
-            if (output.includes('Switch') || output.includes('switch')) {
+        if (ciscoData && checkForKeywordInOutputs(ciscoData, 'cisco')) {
+            if (checkForKeywordInOutputs(ciscoData, 'switch')) {
                 return 'cisco_switch';
-            } else if (output.includes('Router') || output.includes('router')) {
+            }
+            else if (checkForKeywordInOutputs(ciscoData, 'router')) {
                 return 'cisco_router';
-            } else if (output.includes('Adaptive Security Appliance') || output.includes('ASA')) {
+            }
+            else if (checkForKeywordInOutputs(ciscoData, 'ASA') || checkForKeywordInOutputs(ciscoData, 'security')) {
                 return 'cisco_firewall';
             }
         }
 
-        // If not a Cisco device, try detecting Linux or Windows
-        const linuxResponse = await fetch('/api/ssh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                hostname,
-                username,
-                password,
-                commands: ['uname -a', 'cat /etc/os-release']  // Linux commands
-            }),
+        // TEST FOR LINUX
+        const linuxResponse = await apicall({
+            hostname,
+            username,
+            password,
+            devicetype: 'linux',
+            commands: ['export TERM=dumb', 'uname -a', 'cat /etc/os-release']  // Linux commands
         });
 
         const linuxData = await linuxResponse.json();
-        const linuxOutput = linuxData.output.find((entry: TerminalEntry) => entry.type === 'output')?.content;
-
-        if (linuxOutput && linuxOutput.includes('Linux')) {
+        const isLinux = checkForKeywordInOutputs(linuxData, 'linux')
+        if (isLinux) {
             return 'linux';
         }
 
-        const windowsResponse = await fetch('/api/ssh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                hostname,
-                username,
-                password,
-                commands: ['ver']  // Windows command
-            }),
+        // TEST FOR WINDOWS
+        const windowsResponse = await apicall({
+            hostname,
+            username,
+            password,
+            devicetype: 'windows',
+            commands: ['ver']  // Windows command
         });
-
         const windowsData = await windowsResponse.json();
-        const windowsOutput = windowsData.output.find((entry: TerminalEntry) => entry.type === 'output')?.content;
+        const windowsOutput = checkForKeywordInOutputs(windowsData, 'windows')
 
-        if (windowsOutput && windowsOutput.includes('Windows')) {
+        if (windowsOutput) {
             return 'windows';
         }
 
@@ -75,4 +66,12 @@ export default async function detectDeviceType(hostname: string, username: strin
         console.error('Error detecting device type:', error);
         return 'unknown_device';
     }
+}
+
+// Check if a keyword is in any of the terminalentry output fields.
+function checkForKeywordInOutputs(data: { output: TerminalEntry[] }, keyword: string): string | null {
+    const isKeywordFound = data.output.some(
+        (entry) => entry.type === 'output' && entry.content.toLowerCase().includes(keyword.toLowerCase())
+    );
+    return isKeywordFound ? keyword : null;
 }
