@@ -48,8 +48,9 @@ export interface RequestData {
     settings?: CallSettings
 }
 
-interface CallSettings {
+export interface CallSettings {
     forceciscossh: boolean
+    usecompiledbinaries: boolean
 }
 
 // ======================================================= //
@@ -80,14 +81,18 @@ export async function POST(request: Request) {
             }
         }
 
-        // If no commands are given, test the SSH connection
-        if (commands.length === 0) {
+        // If no commands are given (or ), test the SSH connection
+        if (((devicetype === 'cisco_switch') || (devicetype === 'cisco_router') || (devicetype === 'cisco_firewall')) && settings?.forceciscossh) {
+
+        }
+
+        else if (commands.length === 0) {
             const connectionResult = await testConnection(hostname, username, password);
             return NextResponse.json({ output: connectionResult });
         }
 
         // Otherwise, handle the SSH commands execution
-        const terminalEntries = await handleExecution(hostname, username, password, commands, devicetype, enablepass, settings?.forceciscossh);
+        const terminalEntries = await handleExecution(hostname, username, password, commands, devicetype, enablepass, settings);
         return NextResponse.json({ output: terminalEntries });
 
     }

@@ -10,6 +10,7 @@ import { exec } from "child_process";
 import { platform } from "os";
 import path from "path";
 import fs from 'fs'
+import { CallSettings } from "./route";
 import HandleCiscoSSH from "./ts (deprecated)/ciscoSSHexecute";
 
 // Mapping for executable names based on the device type
@@ -75,14 +76,14 @@ const handleExecution = (
     commands: string[], // List of commands to execute
     devicetype?: Device["type"], // Device type (optional)
     enablepass?: string, // Enable password (optional)
-    forceciscossh = false // Flag to force Cisco SSH (optional)
+    settings?: CallSettings // Flag to force Cisco SSH (optional)
 ): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
         let filepath: string; // Variable to store the script or executable path
         let executable: string | null = null; // Variable to store the executable path if found
 
         if (devicetype === 'cisco_switch' || devicetype === 'cisco_firewall' || devicetype === 'cisco_router') {
-            if (forceciscossh) {
+            if (settings?.forceciscossh) {
                 console.log('Using experimental CiscoSSH');
                 resolve(HandleCiscoSSH(hostname, username, password, commands, enablepass)); // Handle Cisco SSH separately
                 return;
@@ -93,8 +94,11 @@ const handleExecution = (
             filepath = EXECUTABLE_NAMES.SSH_OTHER; // Default SSH handler for all other devices
         }
 
-        // Try to find the compiled executable first
-        executable = getExecutablePath(filepath);
+        // Try to find the compiled executable first if the appropriate setting is set
+        if (settings?.usecompiledbinaries) {
+            executable = getExecutablePath(filepath);
+        }
+
         if (!executable) {
             // If the compiled binary isn't found, fall back to the Python script
             const scriptExtension = '.py'; // Python script extension

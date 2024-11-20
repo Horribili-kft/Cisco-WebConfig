@@ -19,18 +19,17 @@ function MapPorts() {
         return (
             device.interfaces.map((iface, index) => (
                 <div key={index}>
-                    <PortGraphic name={iface.shortname || iface.name} />
+                    <PortGraphic name={iface.shortname || iface.name} type={`vlan: ${iface.vlan}`} up={!iface.shutdown} />
                 </div>
             ))
         );
     }
 
-
     if (device instanceof CiscoRouter) {
         return (
             device.interfaces.map((iface, index) => (
                 <div key={index}>
-                    <PortGraphic name={iface.shortname || iface.name} />
+                    <PortGraphic name={iface.shortname || iface.name} type={iface.ipAddress} up={iface.shutdown} />
                 </div>
             ))
         );
@@ -40,7 +39,7 @@ function MapPorts() {
         return (
             device.interfaces.map((iface, index) => (
                 <div key={index}>
-                    <PortGraphic name={iface.name} />
+                    <PortGraphic name={iface.name} type={iface.ipAddress} up={iface.up}/>
                 </div>
             ))
         );
