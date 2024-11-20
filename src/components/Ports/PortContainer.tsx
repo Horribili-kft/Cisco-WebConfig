@@ -3,6 +3,7 @@ import CiscoSwitch from '@/classes/CiscoSwitch';
 import { useDeviceStore } from '@/store/deviceStore';
 import PortGraphic from './PortGraphic';
 import LinuxDevice from '@/classes/Linux';
+import CiscoRouter from '@/classes/CiscoRouter';
 
 export default function PortContainer() {
     return (
@@ -18,7 +19,17 @@ function MapPorts() {
         return (
             device.interfaces.map((iface, index) => (
                 <div key={index}>
-                    {/* We *should* in all cases have a shortname for the interface, which in the worst case will be the same as the normal name. Better be safe than sorry though */}
+                    <PortGraphic name={iface.shortname || iface.name} />
+                </div>
+            ))
+        );
+    }
+
+
+    if (device instanceof CiscoRouter) {
+        return (
+            device.interfaces.map((iface, index) => (
+                <div key={index}>
                     <PortGraphic name={iface.shortname || iface.name} />
                 </div>
             ))

@@ -122,7 +122,7 @@ const testConnection = (hostname: string, username: string, password: string): P
                 resolve([{ type: 'output', content: `🟢 Successfully connected to ${hostname}` }]); // Return a success message
             })
             .on('error', (err) => {
-                reject([{ type: 'error', content: `SSH Connection Error: ${err.message}` }]); // Return an error message
+                reject([{ type: 'error', content: `Connection Error: ${err.message}` }]); // Return an error message
             });
     });
 };

@@ -19,11 +19,19 @@ if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
 Write-Host "Running npm install..."
 npm install --include=dev --legacy-peer-deps
 
-# Check if Python is installed, if not, install it
+# Check if Python is installed, if not, prompt the user to install it
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
-    Write-Host "Python not found. Installing Python..."
-    # You can download the Python installer here: https://www.python.org/downloads/
-    Start-Process "msiexec.exe" -ArgumentList "/i", "https://www.python.org/ftp/python/3.x.x/python-3.x.x-amd64.exe", "/quiet" -Wait
+    Write-Host "Python not found. Please install Python manually."
+
+    # Open the Python download page in the default browser
+    $pythonInstallerUrl = "https://www.python.org/downloads/release/python-3127/"
+    Write-Host "Opening Python download page in your browser..."
+    Start-Process $pythonInstallerUrl
+
+    # Wait for the user to install Python manually
+    Write-Host "Please install Python and press any key to continue once the installation is complete."
+    Read-Host -Prompt "Press Enter to continue after installation"
+
 } else {
     Write-Host "Python is already installed."
 }
