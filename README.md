@@ -14,6 +14,13 @@ A projekt fejlesztésének elkezdése
 git clone https://github.com/Horribili-kft/Cisco-WebConfig
 ```
 
+> [!NOTE]
+> Ha Windowson vagy, futtasd a setup.ps1 scriptet, ez telepít mindent ami szükséges
+
+> [!NOTE]
+> Ha debian alapú linuxon vagy, futtasd a setup.sh scriptet, ez telepít mindent ami szükséges
+
+
 3. Telepítsd a szükséges node csomagokat:
 
 ```bash
