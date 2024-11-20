@@ -2,7 +2,8 @@ import { TerminalEntry } from '@/store/terminalStore';
 import { NextResponse } from 'next/server';
 import { Algorithms, Client } from 'ssh2';
 import { Device } from '@/classes/Device';
-import executePythonScript from './python/python_handler';
+import handleExecution from './execHandler';
+
 
 const ciscoSSHalgorithms: Algorithms = {
     kex: [
@@ -51,7 +52,11 @@ interface CallSettings {
     forceciscossh: boolean
 }
 
-// ------------------- START OF CODE SECTION --------------------
+// ======================================================= //
+//                                                         //
+// -------------------- START OF CODE -------------------- //
+//                                                         //
+// ======================================================= //
 
 export async function POST(request: Request) {
     try {
@@ -82,7 +87,7 @@ export async function POST(request: Request) {
         }
 
         // Otherwise, handle the SSH commands execution
-        const terminalEntries = await executePythonScript(hostname, username, password, commands, devicetype, enablepass, settings?.forceciscossh);
+        const terminalEntries = await handleExecution(hostname, username, password, commands, devicetype, enablepass, settings?.forceciscossh);
         return NextResponse.json({ output: terminalEntries });
 
     }
@@ -126,9 +131,6 @@ const testConnection = (hostname: string, username: string, password: string): P
             });
     });
 };
-
-
-
 
 
 
