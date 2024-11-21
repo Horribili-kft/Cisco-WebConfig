@@ -1,4 +1,3 @@
-import { Device } from "@/classes/Device";
 import { TerminalEntry } from "@/store/terminalStore";
 import { Algorithms, Client } from "ssh2";
 

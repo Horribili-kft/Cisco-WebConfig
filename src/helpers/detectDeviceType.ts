@@ -27,6 +27,9 @@ export default async function detectDeviceType(hostname: string, username: strin
             else if (checkForKeywordInOutputs(ciscoData, 'ASA') || checkForKeywordInOutputs(ciscoData, 'security')) {
                 return 'cisco_firewall';
             }
+            else {
+                return 'cisco_router'
+            }
         }
 
         // TEST FOR LINUX

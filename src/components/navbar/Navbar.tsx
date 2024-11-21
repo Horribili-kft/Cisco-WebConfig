@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Navbar() {
   return (
@@ -13,7 +13,7 @@ export default function Navbar() {
       <div>
         {/* Horribili" logo */}
         <Link href={"/"}>
-          <img src="/logo.png" alt="Logo" className='max-h-8 cursor-pointer hover:scale-105 hover:animate-pulse hover:brightness-125 active:scale-95 transition-all' />
+          <Image height={32} width={128} src="/logo.png" alt="Logo" className='max-h-8 cursor-pointer hover:scale-105 hover:animate-pulse hover:brightness-125 active:scale-95 transition-all' />
         </Link>
       </div>
 

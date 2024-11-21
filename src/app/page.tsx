@@ -10,12 +10,10 @@ import DeviceInfo from "@/components/DeviceInfo";
 const SshConsole: React.FC = () => {
   const {
     connection,
-    device,
     connectToDevice,
     disconnect,
-    loading: connLoading,
   } = useDeviceStore();
-  const { executeCommands, loading: execLoading } = useCommandStore();
+  const { executeCommands } = useCommandStore();
 
   const [hostname, setHostname] = useState(connection.hostname || "");
   const [username, setUsername] = useState(connection.username || "");
@@ -27,6 +25,7 @@ const SshConsole: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(false);
 
+  // Logic for handling submission. Loading state is handled here too
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
