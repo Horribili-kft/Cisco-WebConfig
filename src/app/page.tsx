@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useDeviceStore } from "@/store/deviceStore";
 import PortContainer from "@/components/Ports/PortContainer";
 import DeviceInfo from "@/components/DeviceInfo";
+import Commands from "@/components/Ports/Commands";
+
 
 const SshConsole: React.FC = () => {
   const {
@@ -158,6 +160,10 @@ const SshConsole: React.FC = () => {
           <DeviceInfo />
           {/* Portgraphic container */}
           <PortContainer />
+           {/* New Section for Buttons */}
+            {/* Commands Section */}
+          <Commands />
+
         </div>
       </div>
 
