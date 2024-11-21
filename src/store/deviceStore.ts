@@ -5,6 +5,7 @@ import detectDeviceType from '@/helpers/detectDeviceType';
 import CiscoSwitch from '@/classes/CiscoSwitch';
 import LinuxDevice from '@/classes/Linux';
 import { apicall } from '@/helpers/apicall';
+import CiscoRouter from '@/classes/CiscoRouter';
 
 interface DeviceStore {
     loading: { state: boolean, msg: string | null }
@@ -83,6 +84,9 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
                 case 'cisco_switch':
                     device = new CiscoSwitch(hostname);  // hostname assumed as IP for now
                     break;
+                case 'cisco_router':
+                    device = new CiscoRouter(hostname);
+                    break
                 case 'linux':
                     device = new LinuxDevice(hostname);
                     break;

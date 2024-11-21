@@ -2,7 +2,8 @@ import { TerminalEntry } from '@/store/terminalStore';
 import { NextResponse } from 'next/server';
 import { Algorithms, Client } from 'ssh2';
 import { Device } from '@/classes/Device';
-import executePythonScript from './python/python_handler';
+import handleExecution from './execHandler';
+
 
 const ciscoSSHalgorithms: Algorithms = {
     kex: [
@@ -47,11 +48,16 @@ export interface RequestData {
     settings?: CallSettings
 }
 
-interface CallSettings {
+export interface CallSettings {
     forceciscossh: boolean
+    usecompiledbinaries: boolean
 }
 
-// ------------------- START OF CODE SECTION --------------------
+// ======================================================= //
+//                                                         //
+// -------------------- START OF CODE -------------------- //
+//                                                         //
+// ======================================================= //
 
 export async function POST(request: Request) {
     try {
@@ -75,14 +81,18 @@ export async function POST(request: Request) {
             }
         }
 
-        // If no commands are given, test the SSH connection
-        if (commands.length === 0) {
+        // If no commands are given (or ), test the SSH connection
+        if (((devicetype === 'cisco_switch') || (devicetype === 'cisco_router') || (devicetype === 'cisco_firewall')) && settings?.forceciscossh) {
+
+        }
+
+        else if (commands.length === 0) {
             const connectionResult = await testConnection(hostname, username, password);
             return NextResponse.json({ output: connectionResult });
         }
 
         // Otherwise, handle the SSH commands execution
-        const terminalEntries = await executePythonScript(hostname, username, password, commands, devicetype, enablepass, settings?.forceciscossh);
+        const terminalEntries = await handleExecution(hostname, username, password, commands, devicetype, enablepass, settings);
         return NextResponse.json({ output: terminalEntries });
 
     }
@@ -122,13 +132,10 @@ const testConnection = (hostname: string, username: string, password: string): P
                 resolve([{ type: 'output', content: `🟢 Successfully connected to ${hostname}` }]); // Return a success message
             })
             .on('error', (err) => {
-                reject([{ type: 'error', content: `SSH Connection Error: ${err.message}` }]); // Return an error message
+                reject([{ type: 'error', content: `Connection Error: ${err.message}` }]); // Return an error message
             });
     });
 };
-
-
-
 
 
 

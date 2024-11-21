@@ -1,3 +1,4 @@
+# This is so that Python doesn't complain that telnetlib is going to be removed in python 3.13 (If you are using that version, that is why the program is failing. Use a compiled version)
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
