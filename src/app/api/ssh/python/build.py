@@ -1,5 +1,6 @@
 import os
 import platform
+import shutil
 import subprocess
 import sys
 
@@ -8,6 +9,7 @@ PYTHON_FILES = ["ssh_cisco.py", "ssh_linux.py", "telnet_cisco.py"]  # Add your P
 
 # Get the current working directory (where the script is located)
 SCRIPT_DIR = os.getcwd()
+print(SCRIPT_DIR)
 
 # Ensure that PyInstaller is installed
 def check_pyinstaller():
@@ -49,12 +51,16 @@ def compile_executable(python_file, output_dir):
     print("Cleaning up temporary files...")
     spec_file = os.path.join(SCRIPT_DIR, f"{base_name}.spec")
     build_dir = os.path.join(SCRIPT_DIR, "build")
+    
+    # Remove build directory if it exists
     if os.path.exists(build_dir):
-        subprocess.call(["rm", "-rf", build_dir])
+        shutil.rmtree(build_dir)  # This will remove the directory and its contents
+    
+    # Remove the .spec file if it exists
     if os.path.exists(spec_file):
         os.remove(spec_file)
-    return True
 
+    return True
 def main():
     # Check if PyInstaller is installed
     check_pyinstaller()
@@ -64,13 +70,17 @@ def main():
 
     # Set a common output directory for both Windows and Linux
     output_dir = os.path.join(SCRIPT_DIR, "dist")
+    print(output_dir)
 
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
 
     # Loop over each Python file and compile it for the current platform
     for python_file in PYTHON_FILES:
-        if os.path.exists(python_file):
+        filepath = os.path.join(SCRIPT_DIR, python_file)
+        print(filepath)
+        if os.path.exists(filepath):
+
             if not compile_executable(python_file, output_dir):
                 print(f"Failed to compile {python_file} for {current_platform}.")
         else:
