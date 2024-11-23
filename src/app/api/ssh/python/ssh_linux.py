@@ -20,6 +20,11 @@ def execute_ssh_command(ip, username, password=None, command=None):
         # Connect to the server using password authentication
         client.connect(ip, username=username, password=password)
 
+        # If no command is provided, return "Connection successful"
+        if not command:
+            client.close()  # Close the connection
+            return [{"type": "info", "content": "SSH connection successful"}]
+
         # If commands are provided as a list
         if isinstance(command, list):
             for cmd in command:

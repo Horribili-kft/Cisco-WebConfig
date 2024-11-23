@@ -14,16 +14,20 @@ const SshConsole: React.FC = () => {
   const [hostname, setHostname] = useState(connection.hostname || "");
   const [username, setUsername] = useState(connection.username || "");
   const [password, setPassword] = useState(connection.password || "");
-  const [enablePassword, setEnablePassword] = useState(
-    connection.enablepass || ""
-  );
+  const [enablePassword, setEnablePassword] = useState(connection.enablepass || "");
   const [commands, setCommands] = useState("");
 
+  // Responsivity
   const [loading, setLoading] = useState<boolean>(false);
+  const [executionTime, setExecutionTime] = useState<number | null>(null);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
+    const startTime = performance.now();
     e.preventDefault();
     setLoading(true);
+
+    // The actual logic
     if (commands) {
       if (
         !connection.state &&
@@ -36,8 +40,14 @@ const SshConsole: React.FC = () => {
     } else {
       await connectToDevice(hostname, username, password, enablePassword);
     }
+    // End of logicc
+
     setLoading(false);
+    const endTime = performance.now();
+    setExecutionTime(endTime - startTime);
   };
+
+
 
   const handleDisconnect = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +90,10 @@ const SshConsole: React.FC = () => {
                         {hostname}{" "}
                       </a>
                       Username: <span className="text-info">{username}</span>
+                      {" "}
+                      {executionTime ? `Time: ${executionTime} ms` : <></>}
+
+
                     </p>
                   </div>
                 ) : (

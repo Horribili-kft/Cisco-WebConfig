@@ -34,6 +34,7 @@ const PortGraphic: React.FC<PortGraphicProps> = ({ name, type, up, onClick }) =>
   );
 };
 
+
 function getUpStyle(up: boolean) {
   return up ? 'stroke-success' : 'stroke-error';
 }

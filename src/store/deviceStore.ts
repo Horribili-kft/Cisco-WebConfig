@@ -1,10 +1,8 @@
 import { create } from 'zustand';
-import { TerminalEntry, useTerminalStore } from './terminalStore';
 import { Device } from '@/classes/Device';
 import detectDeviceType from '@/helpers/detectDeviceType';
 import CiscoSwitch from '@/classes/CiscoSwitch';
 import LinuxDevice from '@/classes/Linux';
-import { apicall } from '@/helpers/apicall';
 import CiscoRouter from '@/classes/CiscoRouter';
 
 interface DeviceStore {
@@ -42,11 +40,11 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
 
     // Connect to a device, detect its type, and initialize the device object
     connectToDevice: async (hostname, username, password, enablepass) => {
-        const { addTerminalEntry } = useTerminalStore.getState();
 
         set({ loading: { state: true, msg: 'Trying to connect...' } })
         try {
-            // Step 1: Test connection to the device
+            // Step 1: Test connection to the device (we do not do this anymore, as it was redundant)
+            /*
             const connectionResponse = await apicall({
                 hostname,
                 username,
@@ -60,9 +58,9 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
                 throw new Error(data.content || 'Connection failed');
             }
 
-
             const terminalEntries: TerminalEntry[] = data.output;
             terminalEntries.forEach((entry) => addTerminalEntry(entry.content, entry.type));
+
 
 
             // If there's at least one "output" entry, assume the connection was successful
@@ -70,6 +68,8 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
             if (!isConnected) {
                 throw new Error(data[0].error || 'Connection failed');
             }
+            */
+
             set({ loading: { state: true, msg: 'Detecting device type...' } })
 
             // Step 2: Detect the device type using specific commands

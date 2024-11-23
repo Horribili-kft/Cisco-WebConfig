@@ -3,6 +3,7 @@ import { Device } from "./Device";
 import { apicall } from "@/helpers/apicall";
 
 interface SwitchInterface {
+    id: number;
     name: string;
     shortname: string;
     switchportMode: string;
@@ -115,6 +116,7 @@ export function parseRunningConfig(config: string): { hostname: string; version:
 
     let currentInterface: SwitchInterface | null = null;
 
+    let interfaceid = 1
     configLines.forEach(line => {
         // Parse hostname
         if (line.startsWith('hostname ')) {
@@ -133,12 +135,14 @@ export function parseRunningConfig(config: string): { hostname: string; version:
             }
             const interfaceName = line.replace('interface ', '').trim();
             currentInterface = {
+                id: interfaceid,
                 name: interfaceName,
                 shortname: generateShortName(interfaceName), // Set the shortname
                 switchportMode: '',
                 vlan: 1, // Default VLAN is usually 1
                 shutdown: false,
             };
+            interfaceid +=1
         }
 
         if (currentInterface) {

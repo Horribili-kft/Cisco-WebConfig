@@ -115,7 +115,7 @@ const Commands: React.FC<CommandsProps> = ({ appendCommand }) => {
 
       {/* Section: MAC Address Configuration */}
       <div>
-        <h2 className="text-lg font-bold mb-2">MAC Address Configuration</h2>
+        <h2 className="text-lg font-bold mb-2">Switchport security</h2>
         <div className="flex items-center space-x-4">
           <input
             type="text"

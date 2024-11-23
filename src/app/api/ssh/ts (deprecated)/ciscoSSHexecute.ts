@@ -1,6 +1,7 @@
 import { TerminalEntry } from "@/store/terminalStore";
 import { Algorithms, Client } from "ssh2";
 
+
 const ciscoSSHalgorithms: Algorithms = {
     kex: [
         "diffie-hellman-group1-sha1",
@@ -11,6 +12,7 @@ const ciscoSSHalgorithms: Algorithms = {
         "diffie-hellman-group14-sha1"
     ],
     cipher: [
+        "3des-cbc",
         "aes128-ctr",
         "aes192-ctr",
         "aes256-ctr",
