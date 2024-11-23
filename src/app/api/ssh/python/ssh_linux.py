@@ -1,3 +1,7 @@
+# This is so that paramiko doesn't complain on some systems (It does so on arch based linux distributions)
+import warnings
+warnings.filterwarnings(action='ignore', module='.*paramiko.*')
+
 import paramiko
 import sys
 import json
