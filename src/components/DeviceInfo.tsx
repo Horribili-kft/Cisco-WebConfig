@@ -25,16 +25,6 @@ export default function DeviceInfo() {
                         <div>{device.version}</div>
                     </div>
                 </div>
-                <div className="flex flex-row gap-x-4 mt-2">
-                    <div className="flex flex-row gap-x-4 justify-between text-sm items-center bg-base-200 rounded-lg p-2 flex-1">
-                        <p>Hostname:</p>
-                        <div>{device.hostname}</div>
-                    </div>
-                    <div className="flex flex-row gap-x-4 justify-between text-sm items-center bg-base-200 rounded-lg p-2 flex-1">
-                        <p>Version:</p>
-                        <div>{device.version}</div>
-                    </div>
-                </div>
             </div>
         );
     }

@@ -4,14 +4,11 @@ import CiscoRouter from '@/classes/CiscoRouter';
 import LinuxDevice from '@/classes/Linux';
 import { useDeviceStore } from '@/store/deviceStore';
 import PortGraphic from './PortGraphic';
+import { useCommandStore } from '@/store/commandStore';
 
-const PortContainer: React.FC<{ appendCommand: (command: string) => void }> = ({ appendCommand }) => {
+const PortContainer: React.FC = () => {
   const { device } = useDeviceStore();
-
-  const handlePortClick = (portName: string) => {
-    const command = `Interface (${portName})`;
-    appendCommand(command); // Append to the textarea when a port is clicked
-  };
+  const { selectedInterfaces, toggleInterface } = useCommandStore();
 
   if (device instanceof CiscoSwitch) {
     return (
@@ -20,9 +17,10 @@ const PortContainer: React.FC<{ appendCommand: (command: string) => void }> = ({
           <div key={index}>
             <PortGraphic
               name={iface.shortname || iface.name}
-              type={iface.vlan ? `vlan: ${iface.vlan}` : 'Unknown VLAN'} // Provide fallback if undefined
+              type={`vlan: ${iface.vlan}`}
               up={!iface.shutdown}
-              onClick={() => handlePortClick(iface.name || 'Unnamed Interface')} // Fallback if name is undefined
+              selected={selectedInterfaces.has(iface.name)}
+              onClick={() => toggleInterface(iface.name)}
             />
           </div>
         ))}
@@ -37,9 +35,10 @@ const PortContainer: React.FC<{ appendCommand: (command: string) => void }> = ({
           <div key={index}>
             <PortGraphic
               name={iface.shortname || iface.name}
-              type={iface.ipAddress || 'No IP Address'} // Provide fallback if undefined
+              type={iface.ipAddress}
+              selected={selectedInterfaces.has(iface.name)}
               up={!iface.shutdown}
-              onClick={() => handlePortClick(iface.name || 'Unnamed Interface')} // Fallback if name is undefined
+              onClick={() => toggleInterface(iface.name)}
             />
           </div>
         ))}
@@ -54,9 +53,10 @@ const PortContainer: React.FC<{ appendCommand: (command: string) => void }> = ({
           <div key={index}>
             <PortGraphic
               name={iface.name}
-              type={iface.ipAddress || 'No IP Address'} // Provide fallback if undefined
+              type={iface.ipAddress}
+              selected={selectedInterfaces.has(iface.name)}
               up={iface.up}
-              onClick={() => handlePortClick(iface.name || 'Unnamed Interface')} // Fallback if name is undefined
+              onClick={() => toggleInterface(iface.name)}
             />
           </div>
         ))}
@@ -64,7 +64,6 @@ const PortContainer: React.FC<{ appendCommand: (command: string) => void }> = ({
     );
   }
 
-  return <div>No device connected</div>;
 };
 
 export default PortContainer;

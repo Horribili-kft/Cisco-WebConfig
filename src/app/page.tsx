@@ -1,20 +1,29 @@
 "use client";
 import Terminal from "@/components/Terminal";
 import { useCommandStore } from "@/store/commandStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDeviceStore } from "@/store/deviceStore";
 import PortContainer from "@/components/Ports/PortContainer";
 import DeviceInfo from "@/components/DeviceInfo";
-import Commands from "@/components/Ports/Commands";
+import Commands from "@/components/configuration/cisco/SwitchInterface";
 
 const SshConsole: React.FC = () => {
   const { connection, connectToDevice, disconnect } = useDeviceStore();
   const { executeCommands } = useCommandStore();
 
-  const [hostname, setHostname] = useState(connection.hostname || "");
-  const [username, setUsername] = useState(connection.username || "");
-  const [password, setPassword] = useState(connection.password || "");
-  const [enablePassword, setEnablePassword] = useState(connection.enablepass || "");
+  const [hostname, setHostname] = useState(connection.hostname);
+  const [username, setUsername] = useState(connection.username);
+  const [password, setPassword] = useState(connection.password);
+  const [enablePassword, setEnablePassword] = useState(connection.enablepass);
+
+  // needed for device persistance
+  useEffect(() => {
+    setHostname(connection.hostname)
+    setUsername(connection.username)
+    setPassword(connection.password)
+  }, [connection])
+
+
   const [commands, setCommands] = useState("");
 
   // Responsivity
@@ -158,8 +167,8 @@ const SshConsole: React.FC = () => {
 
         <div>
           <DeviceInfo />
-          <PortContainer appendCommand={appendCommand} /> {/* Pass the correct prop */}
-          <Commands appendCommand={appendCommand} />
+          <PortContainer/> {/* Pass the correct prop */}
+          <Commands addCommand={appendCommand} />
         </div>
       </div>
     </>
@@ -175,7 +184,7 @@ const SshConsole: React.FC = () => {
         ? "Connect and get configuration, then execute"
         : "Connect and get configuration";
     } else {
-      return "Retest connection";
+      return "Reload configuration";
     }
   }
 };

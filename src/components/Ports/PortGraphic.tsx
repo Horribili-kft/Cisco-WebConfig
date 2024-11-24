@@ -3,15 +3,16 @@ import PropTypes from 'prop-types';
 
 interface PortGraphicProps {
   name: string;
-  type: string; // Ensure type is a string
+  type: string | undefined;
   up: boolean;
-  onClick: () => void; // Click handler for interaction
+  selected: boolean;
+  onClick: () => void; 
 }
 
-const PortGraphic: React.FC<PortGraphicProps> = ({ name, type, up, onClick }) => {
+const PortGraphic: React.FC<PortGraphicProps> = ({ name, type, up, selected, onClick}) => {
   return (
     <div
-      className="card bg-base-200 m-1 w-[4.5rem] shadow-2xl hover:cursor-pointer hover:brightness-110 active:scale-95 transition-all duration-75"
+      className={`card bg-base-200 m-1 w-[4.5rem] shadow-2xl hover:cursor-pointer brightness-75 hover:brightness-110 active:scale-95 transition-all duration-75 active:brightness-125 ${selected ? 'scale-105 brightness-125' : ''}`}
       onClick={onClick}
     >
       <figure>

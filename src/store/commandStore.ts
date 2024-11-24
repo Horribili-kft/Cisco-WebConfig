@@ -6,11 +6,29 @@ import { apicall } from '@/helpers/apicall';
 interface CommandStore {
     loading: boolean;
     executeCommands: (rawCommands: string) => Promise<void>;
+    selectedInterfaces: Set<string>,
+    toggleInterface: (item: string) => void;
 }
 
 export const useCommandStore = create<CommandStore>((set) => ({
     loading: false,
+    selectedInterfaces: new Set(),
 
+    // Function to toggle the interface
+    toggleInterface: (item: string) =>
+        set((state) => {
+            const newSet = new Set(state.selectedInterfaces); // Clone the current set
+            if (newSet.has(item)) {
+                newSet.delete(item); // If the item is present, remove it
+            } else {
+                newSet.add(item); // If the item is not present, add it
+            }
+            return { selectedInterfaces: newSet }; // Return updated state
+        }),
+
+
+
+    // Executes commands
     executeCommands: async (rawCommands) => {
         const { device, connection } = useDeviceStore.getState();
         const { addTerminalEntry } = useTerminalStore.getState();
@@ -39,7 +57,7 @@ export const useCommandStore = create<CommandStore>((set) => ({
                 commands,
                 devicetype: device?.type,
                 enablepass: connection.enablepass || undefined,
-              });
+            });
 
             const data = await response.json();
 
