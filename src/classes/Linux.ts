@@ -2,7 +2,7 @@ import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
 import { apicall } from "@/helpers/apicall";
 
-interface LinuxInterface {
+export interface LinuxInterface {
     name: string;
     up: boolean;
     ipAddress?: string;

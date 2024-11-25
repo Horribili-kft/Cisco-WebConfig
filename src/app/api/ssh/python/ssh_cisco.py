@@ -23,9 +23,14 @@ def execute_ssh_command(ip, username, password=None, enable_password=None, comma
         # Connect to the Cisco switch
         client.connect(ip, username=username, password=password)
 
+        if not command:
+            client.close()  # Close the connection
+            return [{"type": "info", "content": "SSH connection successful"}]
+
         # Open an interactive shell
         shell = client.invoke_shell()
         time.sleep(1)
+
 
         # Read initial banner or prompts
         shell.recv(1000)  # Consume any initial output

@@ -27,7 +27,7 @@ export default async function detectDeviceType(hostname: string, username: strin
             else if (checkForKeywordInOutputs(ciscoData, 'ASA') || checkForKeywordInOutputs(ciscoData, 'security')) {
                 return 'cisco_firewall';
             }
-            else {
+            else { // It was found in testin that at lest one cisco router did not have the 'router' string in its 'show version' output. We now assume that all such cisco devices are routers.
                 return 'cisco_router'
             }
         }

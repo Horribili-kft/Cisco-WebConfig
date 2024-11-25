@@ -1,9 +1,11 @@
 'use client';
 import { useCommandStore } from '@/store/commandStore';
+import { useDeviceStore } from '@/store/deviceStore';
 import { useTerminalStore } from '@/store/terminalStore';
 
 export default function Terminal() {
     const { terminalBuffer, clearTerminalBuffer } = useTerminalStore();
+    const { loading: connloading  } = useDeviceStore()
     const { loading } = useCommandStore();
 
     return (
@@ -29,6 +31,11 @@ export default function Terminal() {
             {loading && (
                 <pre data-prefix=">" className="text-warning animate-pulse"><code>Executing...</code></pre>
             )}
+            {connloading.state && (
+                <pre data-prefix=">" className="text-warning animate-pulse"><code>{connloading.msg}</code></pre>
+            )}
+
+
             {terminalBuffer.length === 0 ? null : (
                 <button
                     className="mt-2 btn btn-xs btn-ghost absolute top-[2px] left-28 transform"

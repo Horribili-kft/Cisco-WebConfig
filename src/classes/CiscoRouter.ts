@@ -2,7 +2,7 @@ import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
 import { apicall } from "@/helpers/apicall";
 
-interface RouterInterface {
+export interface RouterInterface {
     name: string;
     shortname: string; // Add shortname for router interfaces
     ipAddress: string;
@@ -118,6 +118,7 @@ export function parseRunningConfig(config: string): { hostname: string; version:
 
     let currentInterface: RouterInterface | null = null;
 
+    let interfaceid = 1
     configLines.forEach(line => {
         // Parse hostname
         if (line.startsWith('hostname ')) {
@@ -142,6 +143,8 @@ export function parseRunningConfig(config: string): { hostname: string; version:
                 subnetMask: '',
                 shutdown: false,
             };
+            interfaceid += 1
+
         }
 
         if (currentInterface) {

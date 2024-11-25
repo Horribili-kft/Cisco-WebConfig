@@ -35,13 +35,18 @@ import { useSettingsStore } from "@/store/settingsStore";
  */
 
 export async function apicall(requestData: RequestData): Promise<Response> {
-    const { forceciscossh } = useSettingsStore.getState();
+    const { 
+        forceciscossh,
+        usecompiledbinaries
+
+     } = useSettingsStore.getState();
 
     // We use the settingstore settings if none are provided.
     const finalRequestData: RequestData = {
         ...requestData,
         settings: {
             forceciscossh: requestData.settings?.forceciscossh ?? forceciscossh,
+            usecompiledbinaries: requestData.settings?.forceciscossh ?? usecompiledbinaries
         },
     };
 

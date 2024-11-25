@@ -83,6 +83,7 @@ const handleExecution = (
         let executable: string | null = null; // Variable to store the executable path if found
 
         if (devicetype === 'cisco_switch' || devicetype === 'cisco_firewall' || devicetype === 'cisco_router') {
+            // We prepare the command by prepending them with device specific commands
             if (settings?.forceciscossh) {
                 console.log('Using experimental CiscoSSH');
                 resolve(HandleCiscoSSH(hostname, username, password, commands, enablepass)); // Handle Cisco SSH separately

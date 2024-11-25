@@ -1,40 +1,8 @@
 import { TerminalEntry } from '@/store/terminalStore';
 import { NextResponse } from 'next/server';
-import { Algorithms, Client } from 'ssh2';
 import { Device } from '@/classes/Device';
 import handleExecution from './execHandler';
 
-
-const ciscoSSHalgorithms: Algorithms = {
-    kex: [
-        "diffie-hellman-group1-sha1",
-        "ecdh-sha2-nistp256",
-        "ecdh-sha2-nistp384",
-        "ecdh-sha2-nistp521",
-        "diffie-hellman-group-exchange-sha256",
-        "diffie-hellman-group14-sha1"
-    ],
-    cipher: [
-        "aes128-ctr",
-        "aes192-ctr",
-        "aes256-ctr",
-        "aes128-gcm",
-        "aes128-gcm@openssh.com",
-        "aes256-gcm",
-        "aes256-gcm@openssh.com"
-    ],
-    serverHostKey: [
-        "ssh-rsa",
-        "ecdsa-sha2-nistp256",
-        "ecdsa-sha2-nistp384",
-        "ecdsa-sha2-nistp521"
-    ],
-    hmac: [
-        "hmac-sha2-256",
-        "hmac-sha2-512",
-        "hmac-sha1"
-    ]
-}
 
 export interface RequestData {
     hostname: string;
@@ -81,17 +49,16 @@ export async function POST(request: Request) {
             }
         }
 
-        // If no commands are given (or ), test the SSH connection
+        /* We no longer test the connection in JS. (The respective python modules are responsible)
         if (((devicetype === 'cisco_switch') || (devicetype === 'cisco_router') || (devicetype === 'cisco_firewall')) && settings?.forceciscossh) {
 
         }
-
         else if (commands.length === 0) {
             const connectionResult = await testConnection(hostname, username, password);
             return NextResponse.json({ output: connectionResult });
         }
+        */
 
-        // Otherwise, handle the SSH commands execution
         const terminalEntries = await handleExecution(hostname, username, password, commands, devicetype, enablepass, settings);
         return NextResponse.json({ output: terminalEntries });
 
@@ -116,6 +83,7 @@ export async function POST(request: Request) {
 
 // Function to test SSH connection without running any commands
 // This will remain in place, though all execution logic will move to python
+/*
 const testConnection = (hostname: string, username: string, password: string): Promise<TerminalEntry[]> => {
     return new Promise((resolve, reject) => {
         const conn = new Client();
@@ -136,8 +104,7 @@ const testConnection = (hostname: string, username: string, password: string): P
             });
     });
 };
-
-
+ */
 
 /* Unused, we are now using python execution instead
 // Modify the HandleSSH function to use the new executeCommandsViaShell
