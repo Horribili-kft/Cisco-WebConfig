@@ -11,6 +11,7 @@ const SshConsole: React.FC = () => {
   const { connection, connectToDevice, disconnect } = useDeviceStore();
   const { executeCommands } = useCommandStore();
 
+
   const [hostname, setHostname] = useState(connection.hostname);
   const [username, setUsername] = useState(connection.username);
   const [password, setPassword] = useState(connection.password);
@@ -167,7 +168,7 @@ const SshConsole: React.FC = () => {
 
         <div>
           <DeviceInfo />
-          <PortContainer/> {/* Pass the correct prop */}
+          <PortContainer /> {/* Pass the correct prop */}
           <Commands addCommand={appendCommand} />
         </div>
       </div>

@@ -2,7 +2,7 @@ import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
 import { apicall } from "@/helpers/apicall";
 
-interface RouterInterface {
+export interface RouterInterface {
     name: string;
     shortname: string; // Add shortname for router interfaces
     ipAddress: string;

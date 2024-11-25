@@ -10,23 +10,23 @@ interface CommandsProps {
 
 const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
   const [shutdown, setShutdown] = useState(false);
-  const [vlan, setVlan] = useState("");
+  const [vlan, setVlan] = useState<string>("");
   const [mode, setMode] = useState<'trunk' | 'access'>('trunk');
-  const [macAddress, setMacAddress] = useState("");
+  const [macAddress, setMacAddress] = useState<string>("");
   const [violation, setViolation] = useState<'protect' | 'restrict' | 'shutdown'>('shutdown');
   const [portSecurityEnabled, setPortSecurityEnabled] = useState(false);
   const [portSecurityType, setPortSecurityType] = useState<'mac-address' | 'sticky' | null>(null);
   const [maxMacAddresses, setMaxMacAddresses] = useState(1);
   const [bpduGuardEnabled, setBpduGuardEnabled] = useState(false);
-  const [agingValue, setAgingValue] = useState(""); // Added state for aging value
+  const [agingValue, setAgingValue] = useState<string>("");
 
   const { selectedInterfaces } = useCommandStore();
-  const { addTerminalEntry } = useTerminalStore()
+  const { addTerminalEntry } = useTerminalStore();
   const { device } = useDeviceStore();
 
   // Fetch selected interface and device settings
   useEffect(() => {
-    if (device instanceof Switch && selectedInterfaces.size !== 0) {
+    if (device instanceof Switch && selectedInterfaces.size > 0) {
       const selectedInterfaceName = selectedInterfaces.values().next().value;
       const iface = device.interfaces.find((iface) => iface.name === selectedInterfaceName);
       if (iface) {
@@ -41,40 +41,42 @@ const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
         setBpduGuardEnabled(iface.bpduGuardEnabled);
       }
     }
-  }, [selectedInterfaces, device]); // Modified dependency array to trigger on `selectedInterfaces`
-  
+  }, [selectedInterfaces, device]);
+
   const generateInterfaceRangeCommand = (selectedInterfaces: Set<string>) => {
-    // Step 1: Convert Set to Array
-    const interfacesArray = Array.from(selectedInterfaces);
-
-    // Step 2: Join interfaces with commas to generate the range command
-    const command = `interface range ${interfacesArray.join(', ')}`;
-
-    // Step 3: Return the command
-    return command;
+    return `interface range ${Array.from(selectedInterfaces).join(', ')}`;
   };
 
+  const appendCommand = (command: string) => {
+    addCommand(generateInterfaceRangeCommand(selectedInterfaces));
+    addCommand(command);
+  };
 
-  function appendCommand(command: string) {
-    addCommand(generateInterfaceRangeCommand(selectedInterfaces))
-    addCommand(command)
-  }
+  // Input validation helper function
+  const isValidVLAN = (vlanInput: string) => {
+    const vlanNumber = parseInt(vlanInput, 10);
+    return !isNaN(vlanNumber) && vlanNumber >= 1 && vlanNumber <= 4094;
+  };
+
+  const isValidMACAddress = (mac: string) => {
+    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+    return macRegex.test(mac);
+  };
 
   // Handle shutdown toggle
   const handleToggleShutdown = () => {
-    const newShutdownState = !shutdown;
-    setShutdown(newShutdownState);
-    appendCommand(newShutdownState ? "shutdown" : "no shutdown");
+    setShutdown(!shutdown);
+    appendCommand(shutdown ? "no shutdown" : "shutdown");
   };
 
-  // Handle VLAN mode change
-  const handleSwitchportMode = (mode: 'access' | 'trunk', vlanInput: string) => {
-    if (vlanInput.trim() === "") {
-      addTerminalEntry("Please enter a VLAN number.", 'error');
+  // Handle VLAN mode change with validation
+  const handleSwitchportMode = (selectedMode: 'access' | 'trunk', vlanInput: string) => {
+    if (!isValidVLAN(vlanInput)) {
+      addTerminalEntry("Please enter a valid VLAN number (1-4094).", "error");
       return;
     }
 
-    const modeCommand = mode === 'trunk'
+    const modeCommand = selectedMode === 'trunk'
       ? `switchport mode trunk\nswitchport trunk allowed vlan ${vlanInput}`
       : `switchport mode access\nswitchport access vlan ${vlanInput}`;
 
@@ -85,8 +87,8 @@ const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
   const handlePortSecurity = (mode: string, macAddressInput: string, agingValueInput: string) => {
     switch (mode) {
       case "mac-address":
-        if (!macAddressInput.trim()) {
-          addTerminalEntry("Please enter a MAC address.", 'error');
+        if (!isValidMACAddress(macAddressInput)) {
+          addTerminalEntry("Please enter a valid MAC address.", "error");
           return;
         }
         appendCommand(`switchport port-security mac-address ${macAddressInput}`);
@@ -96,11 +98,12 @@ const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
         break;
       case "absolute":
       case "inactive":
-        if (!agingValueInput.trim()) {
-          addTerminalEntry("Please enter an aging time.", 'error');
+        const agingTime = parseInt(agingValueInput, 10);
+        if (isNaN(agingTime) || agingTime <= 0) {
+          addTerminalEntry("Please enter a valid aging time (positive integer).", "error");
           return;
         }
-        appendCommand(`switchport port-security aging time ${agingValueInput}`);
+        appendCommand(`switchport port-security aging time ${agingTime}`);
         appendCommand(`switchport port-security aging type ${mode.toLowerCase()}`);
         break;
       case "shutdown":
@@ -162,7 +165,7 @@ const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
         </div>
       </div>
 
-      {/* Port Security */}
+      {/* Port Security Configuration */}
       <div>
         <h2 className="text-lg font-bold mb-2">Port Security Configuration</h2>
         <div className="flex items-center space-x-4">
@@ -192,7 +195,7 @@ const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
             placeholder="Enter Aging Time"
             className="input input-bordered w-full"
             value={agingValue}
-            onChange={(e) => handleInputChange(e, setAgingValue)}  // Use the correct state here
+            onChange={(e) => handleInputChange(e, setAgingValue)}
           />
           <button
             className="btn btn-secondary w-1/4"

@@ -10,7 +10,8 @@ export default function Settings() {
   const {
     theme, setTheme, // Just a simple setting keeping track of the theme
     forceciscossh, setForceCiscoSSH, // Setting to force cisco devices to use SSH instead of Telnet
-    usecompiledbinaries, setUseCompiledBinaries
+    usecompiledbinaries, setUseCompiledBinaries,
+    selectionmode, setSelectionMode,
   } = useSettingsStore();
 
   return (
@@ -35,6 +36,12 @@ export default function Settings() {
           </div>
         </Setting>
 
+        <Setting
+          title='Allow selecting multiple interfaces'
+          description='This is on by default, but you can change this if you prefer to configure each interface one-by-one'>
+          <input type="checkbox" className="toggle toggle-lg toggle-warning" checked={selectionmode} onChange={(e) => setSelectionMode(e.target.checked)} />
+        </Setting>
+
         {/* Force Cisco SSH setting. */}
         <Setting
           title='Force SSH on Cisco devices'
@@ -47,6 +54,9 @@ export default function Settings() {
           description='The codebase supports using the compiled versions of the python scripts. You need to take care of compilation yourself. If you have pyinstaller on your system, you can use the build.py script in the /src/app/api/ssh/python directory'>
           <input type="checkbox" className="toggle toggle-lg toggle-warning" checked={usecompiledbinaries} onChange={(e) => setUseCompiledBinaries(e.target.checked)} />
         </Setting>
+
+
+
 
       </div>
     </div>

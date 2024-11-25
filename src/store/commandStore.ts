@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { TerminalEntry, useTerminalStore } from './terminalStore';
 import { useDeviceStore } from './deviceStore';
 import { apicall } from '@/helpers/apicall';
+import { useSettingsStore } from './settingsStore';
 
 interface CommandStore {
     loading: boolean;
@@ -14,15 +15,27 @@ export const useCommandStore = create<CommandStore>((set) => ({
     loading: false,
     selectedInterfaces: new Set(),
 
-    // Function to toggle the interface
     toggleInterface: (item: string) =>
         set((state) => {
-            const newSet = new Set(state.selectedInterfaces); // Clone the current set
-            if (newSet.has(item)) {
-                newSet.delete(item); // If the item is present, remove it
+            const { selectionmode } = useSettingsStore.getState();
+            let newSet;
+
+            if (!selectionmode) {
+                // Single selection mode: Replace with only the new item
+                newSet = new Set([item]); // Start with an empty set and add only the new item
             } else {
-                newSet.add(item); // If the item is not present, add it
+                // Multiple selection mode: Toggle the item's presence in the set
+                newSet = new Set(state.selectedInterfaces); // Clone the current set
+                if (newSet.has(item)) {
+                    newSet.delete(item); // If the item is present, remove it
+                } else {
+                    newSet.add(item); // If the item is not present, add it
+                }
             }
+
+            console.log(state.selectedInterfaces);
+            console.log(newSet.has(item));
+
             return { selectedInterfaces: newSet }; // Return updated state
         }),
 
@@ -40,12 +53,18 @@ export const useCommandStore = create<CommandStore>((set) => ({
             return;
         }
 
-        const commands = rawCommands?.split(/\r?\n/).filter(line => line.trim() !== '');
+        // We split the commmands into an array, with each line being an element of that array.
+        let commands = rawCommands?.split(/\r?\n/).filter(line => line.trim() !== '');
 
         if (commands.length === 0) {
             addTerminalEntry('No commands to execute', 'error');
             set({ loading: false });
             return;
+        }
+
+        // We prepare the command by prepending them with device specific commands
+        if (device?.type === 'cisco_switch' || device?.type === 'cisco_router' || device?.type === 'cisco_firewall') {
+            commands = ['terminal length 0', 'configure terminal', ...commands]
         }
 
         try {

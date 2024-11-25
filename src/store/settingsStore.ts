@@ -4,27 +4,45 @@ import { Theme, themes } from '../../tailwind.config'; // Importing themes
 
 // Define the store's structure
 interface SettingStore {
+
+  // Theme
   theme: Theme;
-  forceciscossh: boolean;
-  usecompiledbinaries: boolean
-  // Actions to update settings
   setTheme: (theme: Theme) => void;
+
+  // Force ssh
+  forceciscossh: boolean;
   setForceCiscoSSH: (forceciscossh: boolean) => void;
+
+  // Python precompiled binaries
+  usecompiledbinaries: boolean
   setUseCompiledBinaries: (usecompiledbinaries: boolean) => void;
+
+  // Selection mode (true: many, false: single, this is for interfaces) 
+  selectionmode: boolean
+  setSelectionMode: (selectionmode: boolean) => void;
 }
 
 
 export const useSettingsStore = create<SettingStore>()(
-  // We store this whole store in localstorage.
+  // We store all settings in localstorage
   persist(
     (set) => ({
       theme: themes[0],
+      setTheme: (theme: Theme) => set({ theme }),
+
+
+      setForceCiscoSSH: (forceciscossh: boolean) => set({ forceciscossh }),
       forceciscossh: false, // Don't force by default
+
+
+      setUseCompiledBinaries: (usecompiledbinaries: boolean) => set({ usecompiledbinaries }),
       usecompiledbinaries: false,
 
-      setTheme: (theme: Theme) => set({ theme }),
-      setForceCiscoSSH: (forceciscossh: boolean) => set({ forceciscossh }),
-      setUseCompiledBinaries: (usecompiledbinaries: boolean) => set({ usecompiledbinaries }),
+      // Selection mode (true: many, false: single, this is for interfaces, we select a single interface by default) 
+      selectionmode: true,
+      setSelectionMode: (selectionmode: boolean) => set({ selectionmode }),
+
+
 
     }),
     {

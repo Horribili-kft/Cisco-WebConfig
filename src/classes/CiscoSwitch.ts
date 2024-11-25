@@ -2,7 +2,7 @@ import { TerminalEntry } from "@/store/terminalStore";
 import { Device } from "./Device";
 import { apicall } from "@/helpers/apicall";
 
-interface SwitchInterface {
+export interface SwitchInterface {
     id: number;
     name: string;
     shortname: string;
