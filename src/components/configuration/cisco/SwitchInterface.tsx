@@ -11,12 +11,12 @@ interface CommandsProps {
 const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
   const [shutdown, setShutdown] = useState(false);
   const [vlan, setVlan] = useState<string>("");
-  const [mode, setMode] = useState<'trunk' | 'access'>('trunk');
+  //const [mode, setMode] = useState<'trunk' | 'access'>('trunk');
   const [macAddress, setMacAddress] = useState<string>("");
-  const [violation, setViolation] = useState<'protect' | 'restrict' | 'shutdown'>('shutdown');
-  const [portSecurityEnabled, setPortSecurityEnabled] = useState(false);
-  const [portSecurityType, setPortSecurityType] = useState<'mac-address' | 'sticky' | null>(null);
-  const [maxMacAddresses, setMaxMacAddresses] = useState(1);
+  //const [violation, setViolation] = useState<'protect' | 'restrict' | 'shutdown'>('shutdown');
+  //const [portSecurityEnabled, setPortSecurityEnabled] = useState(false);
+  //const [portSecurityType, setPortSecurityType] = useState<'mac-address' | 'sticky' | null>(null);
+  //const [maxMacAddresses, setMaxMacAddresses] = useState(1);
   const [bpduGuardEnabled, setBpduGuardEnabled] = useState(false);
   const [agingValue, setAgingValue] = useState<string>("");
 
@@ -32,11 +32,11 @@ const Commands: React.FC<CommandsProps> = ({ addCommand }) => {
       if (iface) {
         setShutdown(iface.shutdown);
         setVlan(iface.vlan.toString());
-        setMode(iface.switchportMode);
-        setPortSecurityEnabled(iface.portSecurityEnabled);
-        setPortSecurityType(iface.portSecurityType);
-        setMaxMacAddresses(iface.maxMacAddresses);
-        setViolation(iface.securityViolationMode);
+        //setMode(iface.switchportMode);
+        //setPortSecurityEnabled(iface.portSecurityEnabled);
+        //setPortSecurityType(iface.portSecurityType);
+        //setMaxMacAddresses(iface.maxMacAddresses);
+        //setViolation(iface.securityViolationMode);
         setMacAddress(iface.portSecurityMacAddress || "");
         setBpduGuardEnabled(iface.bpduGuardEnabled);
       }

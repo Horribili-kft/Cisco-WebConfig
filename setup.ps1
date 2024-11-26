@@ -41,6 +41,8 @@ if (Test-Path "requirements.txt") {
     Write-Host "Installing Python dependencies from requirements.txt..."
     python -m pip install --upgrade pip
     python -m pip install -r requirements.txt
+    python -m pip install -r requirements-dev.txt
+
 } else {
     Write-Host "requirements.txt not found. Skipping Python dependencies installation."
 }

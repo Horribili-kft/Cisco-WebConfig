@@ -39,8 +39,13 @@ if [ -f "requirements.txt" ]; then
     echo "Installing Python dependencies from requirements.txt..."
     python3 -m pip install --upgrade pip
     python3 -m pip install -r requirements.txt
+    python3 -m pip install -r requirements-dev.txt
 else
     echo "requirements.txt not found. Skipping Python dependencies installation."
 fi
 
-echo "Setup complete!"
+# Run npm build-all to build both the Node.js and Python parts
+echo "Running npm build-all..."
+npm run build-all
+
+echo "Setup and build complete!"

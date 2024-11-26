@@ -135,6 +135,7 @@ export const useDeviceStore = create<DeviceStore>()(
 
                 } catch (error) {
                     addTerminalEntry('Error connecting to / detecting device','error');
+                    console.error(error)
                     set({
                         connection: {
                             hostname: "",
