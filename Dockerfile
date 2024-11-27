@@ -44,6 +44,8 @@ WORKDIR /app
 
 # Copy only the .next/standalone directory from the build stage
 COPY --from=build /app/.next/standalone /app/.next/standalone
+RUN mkdir -p /app/.next/standalone/src/app/api
+COPY --from=build /app/src/app/api /app/.next/standalone/src/app/api
 
 # Install only the production Python dependencies (if required)
 RUN if [ -f "requirements.txt" ]; then pip3 install --no-cache-dir --break-system-packages -r requirements.txt; fi
