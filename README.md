@@ -6,19 +6,20 @@ Disclaimers
 A projekt fejlesztésének elkezdése
 --------------
 
-1. Telepítsd a [node.js-t](https://nodejs.org/)
+
   
-2. Klónozd a repo-t (Windowson erősen ajánlott a [GitHub desktop](https://desktop.github.com/))
+1. Klónozd a repo-t (Windowson erősen ajánlott a [GitHub desktop](https://desktop.github.com/))
 
 ```bash
 git clone https://github.com/Horribili-kft/Cisco-WebConfig
 ```
 
-> [!NOTE]
-> Ha Windowson vagy, futtasd a setup.ps1 scriptet, ez telepít mindent ami szükséges
+> [!TIP]
+> Ha Windowson vagy, futtasd a setup.ps1 scriptet, ez telepít mindent ami szükséges, de lesz amit lehet neked kell manuálisan (a script utasítására) megcsinálnod. Ugorj az 5. lépéshez.
 
-> [!NOTE]
-> Ha debian alapú linuxon vagy, futtasd a setup.sh scriptet, ez telepít mindent ami szükséges
+> [!TIP]
+> Ha debian alapú linuxon vagy, futtasd a setup.sh scriptet, ez telepít mindent ami szükséges. Ugorj az 5. lépéshez
+2. Telepítsd a [node.js-t](https://nodejs.org/)
 
 
 3. Telepítsd a szükséges node csomagokat:
