@@ -118,7 +118,6 @@ export function parseRunningConfig(config: string): { hostname: string; version:
 
     let currentInterface: RouterInterface | null = null;
 
-    let interfaceid = 1
     configLines.forEach(line => {
         // Parse hostname
         if (line.startsWith('hostname ')) {
@@ -143,7 +142,6 @@ export function parseRunningConfig(config: string): { hostname: string; version:
                 subnetMask: '',
                 shutdown: false,
             };
-            interfaceid += 1
 
         }
 
